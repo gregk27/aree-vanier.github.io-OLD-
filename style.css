@@ -10,8 +10,13 @@ h1{
   font-size: 50px;
 }
 
-div{
+div.text{
   background-color: black;
+  padding: 25px,25px,25px,25px;
+}
+
+div.body{
+  padding:50px,50px,50px,50px;
 }
 
 h2{
