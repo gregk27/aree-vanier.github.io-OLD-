@@ -1,4 +1,4 @@
-# VERSION 1.0
+# VERSION 1.1
 
 import random
 import time
@@ -50,7 +50,7 @@ print("Server hosted on:", host+":"+str(port))
 # players = [Tank(100,100,tankShape,[255,255,255], "PLAYER")]
 # bots = [Bot(1000,1000,tankShape, [255,0,0], "BOT"),Bot(2500,2500,tankShape, [255,0,0], "BOT"),Bot(4500,4500,tankShape, [255,0,0], "BOT")]
 
-bots = []
+bots = [Bot(1000,1000,tankShape, [255,255,255], "MYBOT.CA", 5000), Bot(1000,1000,tankShape, [255,255,255], "Another bot", 5000), Bot(1000,1000,tankShape, [255,255,255], "Dat bot doe", 5000)]
 players = []
 clients = []
 msgs = []
@@ -191,12 +191,16 @@ while running:
     currentTime = time.time()
     deltaTime = currentTime - oldTime
     for bot in bots:
-        if(not bot.dead):
+        if(bot.dead):
+            bot.revive()
+        else:
             if(len(players)>0):
                 bot.move(players[0].x, players[0].y, 0.060)
             bot.shoot()
             if(bot.health < 0):
-                bot.dead = True
+                bot.dead = True     
+            if(bot.clip < 5):
+                bot.reload()
         
         for bullet in bot.bullets:
             if(bullet.life > 0):
