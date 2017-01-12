@@ -257,9 +257,9 @@ while connected:
         screen.blit(surf, (WIDTH/2-surf.get_width()/2, HEIGHT/2-surf.get_height()*1.5))
         surf = menuFont.render("Press ESCAPE to quit", 1, localPlayer.colour)
         screen.blit(surf, (WIDTH/2-surf.get_width()/2, HEIGHT/2+surf.get_height()*1.5))
-        
+       
+   msgY = HEIGHT
     for message in messages:
-        msgY = HEIGHT
         message[2] -= 1;
         if(message[2] < 0):
             messages.remove(message)
