@@ -1,5 +1,6 @@
 # VERSION 1.4
 # Fixed feed drawing (I hope)
+# Sorted tab menu (Maybe)
 import colorsys
 import math
 import pickle
@@ -104,6 +105,7 @@ tabMenuSurface = pygame.Surface((640, 480))
 
 headers = ["NAME", "  POINTS  ", "  KILLS  ", "  DEATHS  "]
 def tabMenu(players):
+    players = sorted(players, key=lambda x: x.score, reverse=False)
     tabMenuSurface.set_alpha(192)
     tabMenuSurface.fill([169,169,169])
     height = 0
