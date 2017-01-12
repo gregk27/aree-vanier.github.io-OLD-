@@ -1,4 +1,4 @@
-# VERSION 1.2
+# VERSION 1.3
 
 import math
 import random
@@ -121,7 +121,13 @@ class Tank(Entity):
             elif(self.fireMode == 2):
                 self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 500))
                 self.cooldown = 200
-        
+            elif(self.fireMode == 3):
+                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
+                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
+                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
+                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
+                self.clip-=3   
+                self.cooldown = 125
     def erase(self, surface):
         temp = self.colour
         self.colour = [0,0,0]
