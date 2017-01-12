@@ -1,4 +1,4 @@
-# VERSION 1.1
+# VERSION 1.2
 
 import math
 import random
@@ -143,7 +143,11 @@ class Tank(Entity):
             
         
 class Bot(Tank):
-    def move(self, targetX, targetY, speed):
+    def __init__(self, x, y, shape, colour, name, ammo):
+        self.target=0
+    def move(self, players, speed):
+        targetX = players[self.target].x
+        targetY = players[self.target].y
         if(abs(self.x-targetX) < 50 or abs(self.y-targetY) < 50):
             pass
         else:
@@ -152,6 +156,10 @@ class Bot(Tank):
             self.gunAngle = targetAngle
             self.angle = targetAngle
         Tank.move(self)
+    def revive(self, targetCount):
+        self.target = random.randint(0, targetCount)
+        self.x = random.randint(0,4900)
+        self.y = random.randint(0,4900)
         
 class Bullet:
     def __init__(self, x, y, speed, colour, angle, damage):
