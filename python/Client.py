@@ -1,4 +1,4 @@
-# VERSION 1.1
+# VERSION 1.2
 # THIS IS A TEST
 import colorsys
 import math
@@ -259,12 +259,14 @@ while connected:
         screen.blit(surf, (WIDTH/2-surf.get_width()/2, HEIGHT/2+surf.get_height()*1.5))
         
     for message in messages:
+        msgY = HEIGHT
         message[2] -= 1;
         if(message[2] < 0):
             messages.remove(message)
-        else:    
+        else:
             surf = menuFont.render(message[0], 1, message[1])
-            screen.blit(surf, (WIDTH-surf.get_width()-25, HEIGHT-surf.get_height()-25))
+            msgY -= surf.getHeight+25
+            screen.blit(surf, (WIDTH-surf.get_width()-25, msgY))
     
     
     pygame.display.flip()
