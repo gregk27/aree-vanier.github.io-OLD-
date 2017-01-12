@@ -1,4 +1,4 @@
-# VERSION 1.5
+# VERSION 1.6
 # Fixed feed drawing (I hope)
 # Sorted tab menu (Maybe)
 import colorsys
@@ -105,7 +105,7 @@ tabMenuSurface = pygame.Surface((640, 480))
 
 headers = ["NAME", "  POINTS  ", "  KILLS  ", "  DEATHS  "]
 def tabMenu(players):
-    players = sorted(players, key=lambda x: x.score, reverse=False)
+    players = sorted(players, key=lambda x: x.score, reverse=True)
     tabMenuSurface.set_alpha(192)
     tabMenuSurface.fill([169,169,169])
     height = 0
