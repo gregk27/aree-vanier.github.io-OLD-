@@ -1,4 +1,4 @@
-# VERSION 1.4
+# VERSION 1.5
 # Fixed feed drawing (I hope)
 # Sorted tab menu (Maybe)
 import colorsys
@@ -260,7 +260,7 @@ while connected:
         surf = menuFont.render("Press ESCAPE to quit", 1, localPlayer.colour)
         screen.blit(surf, (WIDTH/2-surf.get_width()/2, HEIGHT/2+surf.get_height()*1.5))
        
-   msgY = HEIGHT
+    msgY = HEIGHT
     for message in messages:
         message[2] -= 1;
         if(message[2] < 0):
