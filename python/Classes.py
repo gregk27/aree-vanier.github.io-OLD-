@@ -1,4 +1,4 @@
-# VERSION 1.0
+# VERSION 1.1
 
 import math
 import random
@@ -144,10 +144,13 @@ class Tank(Entity):
         
 class Bot(Tank):
     def move(self, targetX, targetY, speed):
-        self.propel(speed)
-        targetAngle = math.atan2(targetY-self.y, targetX-self.x)*180/math.pi
-        self.gunAngle = targetAngle
-        self.angle = targetAngle
+        if(abs(self.x-targetX) < 50 or abs(self.y-targetY) < 50):
+            pass
+        else:
+            self.propel(speed)
+            targetAngle = math.atan2(targetY-self.y, targetX-self.x)*180/math.pi
+            self.gunAngle = targetAngle
+            self.angle = targetAngle
         Tank.move(self)
         
 class Bullet:
