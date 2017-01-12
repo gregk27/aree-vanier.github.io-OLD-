@@ -1,4 +1,4 @@
-# VERSION 1.2
+# VERSION 1.3
 # THIS IS A TEST
 import colorsys
 import math
