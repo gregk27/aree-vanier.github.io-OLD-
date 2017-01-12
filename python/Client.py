@@ -265,7 +265,7 @@ while connected:
             messages.remove(message)
         else:
             surf = menuFont.render(message[0], 1, message[1])
-            msgY -= surf.getHeight+25
+            msgY -= surf.get_height()+25
             screen.blit(surf, (WIDTH-surf.get_width()-25, msgY))
     
     
