@@ -1,4 +1,4 @@
-# VERSION 1.2
+# VERSION 1.7
 
 import random
 import time
@@ -50,7 +50,7 @@ print("Server hosted on:", host+":"+str(port))
 # players = [Tank(100,100,tankShape,[255,255,255], "PLAYER")]
 # bots = [Bot(1000,1000,tankShape, [255,0,0], "BOT"),Bot(2500,2500,tankShape, [255,0,0], "BOT"),Bot(4500,4500,tankShape, [255,0,0], "BOT")]
 
-bots = [Bot(4900,4900,tankShape, [255,255,255], "MYBOT.CA", 5000), Bot(3000,3000,tankShape, [255,255,255], "Another bot", 5000), Bot(1500,1500,tankShape, [255,255,255], "Dat bot doe", 5000)]
+bots = []#[Bot(4900,4900,tankShape, [255,255,255], "MYBOT.CA", 5000), Bot(3000,3000,tankShape, [255,255,255], "Another bot", 5000), Bot(1500,1500,tankShape, [255,255,255], "Dat bot doe", 5000)]
 players = []
 clients = []
 msgs = []
@@ -88,11 +88,10 @@ class Client(threading.Thread):
                     player.revive(random.randint(100, 4900),random.randint(100, 4900))
                 if(keys[pygame.K_r] and not player.dead): 
                     player.reload()
-                if(keys[pygame.K_c] and self.fireModeDelay < 0):
-                    self.fireModeDelay = 100
-                    player.fireMode += 1
-                    if(player.fireMode == 3):
-                        player.fireMode = 0
+                if(keys[pygame.K_1]): player.fireMode = 0
+                if(keys[pygame.K_2]): player.fireMode = 1
+                if(keys[pygame.K_3]): player.fireMode = 2
+                if(keys[pygame.K_4]): player.fireMode = 3
                         
                 if(not joy == None):
                     if(joy[gregJoy.AXIS_PITCH] > DEADZONE): player.propel(-0.75*gregJoy.AXIS_PITCH*10*deltaTime)
@@ -190,23 +189,24 @@ while running:
     oldTime = currentTime
     currentTime = time.time()
     deltaTime = currentTime - oldTime
-    for bot in bots:
-        if(bot.dead):
-            bot.revive(len(players))
-        else:
-            if(len(players)>0):
-                bot.move(players, 0.060)
-            bot.shoot()
-            if(bot.health < 0):
-                bot.dead = True     
-            if(bot.clip < 5):
-                bot.reload()
-        
-        for bullet in bot.bullets:
-            if(bullet.life > 0):
-                bullet.move()
+    if(len(players) > 0):
+        for bot in bots:
+            if(bot.dead):
+                bot.revive(len(players))
             else:
-                bot.bullets.remove(bullet)
+                if(len(players)>0):
+                    bot.move(players+bots, 0.060)
+                bot.shoot()
+                if(bot.health < 0):
+                    bot.dead = True     
+                if(bot.clip < 5):
+                    bot.reload()
+            
+            for bullet in bot.bullets:
+                if(bullet.life > 0):
+                    bullet.move()
+                else:
+                    bot.bullets.remove(bullet)
     for player in players:
         if(not player.dead):
             player.move()
@@ -246,7 +246,7 @@ while running:
         for e in players+bots:
             for bullet in e.bullets:
                 if(abs(i.x-bullet.x) < 75 and abs(i.y-bullet.y) < 75):
-                    if(pointInsidePolygon.check(bullet.x, bullet.y, iShape) and not i.dead):
+                    if(pointInsidePolygon.check(bullet.x, bullet.y, iShape) and i.health > -1):
                         i.health -= bullet.damage
                         if(i==e):
                             i.score -= 100
