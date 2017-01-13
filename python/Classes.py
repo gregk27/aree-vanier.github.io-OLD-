@@ -1,4 +1,4 @@
-# VERSION 1.7
+# VERSION 1.8
 
 import math
 import random
@@ -126,7 +126,8 @@ class Tank(Entity):
                 self.cooldown = 0
                 for i in range(0,5):
                     if(self.clip > 0):
-                        b = Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 1, self.colour, self.gunAngle+random.randint(0,10)-5, 100)
+                        b = Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 2, self.colour, self.gunAngle+random.randint(0,10)-5, 100)
+                        b.range /= 1.5
                         self.bullets.append(b)
                         self.clip -= 1   
                         self.cooldown += 30
