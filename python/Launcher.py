@@ -22,6 +22,9 @@ running = True
 
 
 
+# TODO: ADD SHOTGUN
+
+
 class ClientThread(threading.Thread):
     def __init__(self, port, host, name, colour):
         super(ClientThread, self).__init__()
@@ -149,7 +152,6 @@ except:
 print(clientVersion + " " + serverVersion + " " + classesVersion)
 
 
-#ADDING THREAD TO MAYBE FIX READING
 webClient = urlopen("https://aree-vanier.github.io/python/Client.py")
 webClientContents = webClient.read().decode()
 webClientVersion = webClientContents.split("\n")[0]
