@@ -1,4 +1,4 @@
-# VERSION 1.8
+# VERSION 1.9
 
 import math
 import random
@@ -156,15 +156,18 @@ class Bot(Tank):
     def __init__(self, x, y, shape, colour, name, ammo):
         self.target=0
         super().__init__(x, y, shape, colour, name, ammo)
+        
     def move(self, targets, speed):
         targeting = True
         targetX = 2500
         targetY = 2500
         while targeting:
+            print(len(targets))
             if(len(targets) < 2):
                 targeting = False
             print("targeting")
             try:
+                print(target[self.target] == self)
                 if(not targets[self.target] == self and not self.target.dead):
                     print("NOT BAD")
                     targetX = targets[self.target].x
