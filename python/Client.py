@@ -1,4 +1,4 @@
-# VERSION 1.6
+# VERSION 1.7
 # Fixed feed drawing (I hope)
 # Sorted tab menu (Maybe)
 import colorsys
