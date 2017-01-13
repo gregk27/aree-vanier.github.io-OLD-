@@ -1,4 +1,4 @@
-# VERSION 1.3
+# VERSION 1.7
 
 import math
 import random
@@ -119,15 +119,18 @@ class Tank(Entity):
                 self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 25))
                 self.cooldown = 20
             elif(self.fireMode == 2):
-                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 500))
+                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 6, self.colour, self.gunAngle+random.randint(0,10)-5, 500))
                 self.cooldown = 200
             elif(self.fireMode == 3):
-                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
-                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
-                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
-                self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
-                self.clip-=3   
-                self.cooldown = 125
+                self.clip += 1
+                self.cooldown = 0
+                for i in range(0,5):
+                    if(self.clip > 0):
+                        b = Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 1, self.colour, self.gunAngle+random.randint(0,10)-5, 100)
+                        self.bullets.append(b)
+                        self.clip -= 1   
+                        self.cooldown += 30
+                print(self.cooldown)
     def erase(self, surface):
         temp = self.colour
         self.colour = [0,0,0]
@@ -151,9 +154,29 @@ class Tank(Entity):
 class Bot(Tank):
     def __init__(self, x, y, shape, colour, name, ammo):
         self.target=0
-    def move(self, players, speed):
-        targetX = players[self.target].x
-        targetY = players[self.target].y
+        super().__init__(x, y, shape, colour, name, ammo)
+    def move(self, targets, speed):
+        targeting = True
+        targetX = 2500
+        targetY = 2500
+        while targeting:
+            if(len(targets) < 2):
+                targeting = False
+            print("targeting")
+            try:
+                if(not targets[self.target] == self and not self.target.dead):
+                    print("NOT BAD")
+                    targetX = targets[self.target].x
+                    targetY = targets[self.target].y
+                    targeting = False
+                else:
+                    print("CHANGE")
+                    self.target=random.randint(0,len(targets))
+            except:
+                ("BUG")
+                self.target=random.randint(0,len(targets))
+        
+        print("NOT")
         if(abs(self.x-targetX) < 50 or abs(self.y-targetY) < 50):
             pass
         else:
@@ -164,8 +187,7 @@ class Bot(Tank):
         Tank.move(self)
     def revive(self, targetCount):
         self.target = random.randint(0, targetCount)
-        self.x = random.randint(0,4900)
-        self.y = random.randint(0,4900)
+        super().revive(random.randint(0,4900), random.randint(0,4900))
         
 class Bullet:
     def __init__(self, x, y, speed, colour, angle, damage):
