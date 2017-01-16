@@ -1,289 +1,274 @@
-# VERSION 1.8
-# Fixed feed drawing (I hope)
-# Sorted tab menu (Maybe)
-import colorsys
-import math
-import pickle
-import sys
-import threading
+# VERSION 1.9
 
-import pygame, socket
+import random
+import time
+
+import pygame, sys, math, socket, threading
 
 from Classes import *
 import gregJoy
+import pointInsidePolygon
+import pickle, traceback
 
-
-## TO ADD:
-#Sort scoreboard
-pygame.init()
-gregJoy.init()
-
+## Fix drifting
+## Change spawns - distance from location
+## Change rotation controls
+## reload delays
+## range limitations
 
 args = sys.argv
-print(args)
 
-map = pygame.Surface((5000, 5000))
-nameFont = pygame.font.Font("data-latin.ttf", 25)
-menuFont = pygame.font.Font("data-latin.ttf", 50)
-connected = False
 
-iteration = 0
 
-tabMenuOn = False
-showNames = True
 
-messages = []
+
+                # Left tread #                                        # Right Tread #                                
+tankShape = [[[-8,14],[-8,-22],[-15,-22],[-15,18],[-8,18],[-8,14], [8,14],[8,-22],[15,-22],[15,18],[8,18],[8,14]], 
+             # Gun Part #
+             [[-8,14],[8,14],[8,-9],[1,-9],[1,-27],[-1,-27],[-1,-9],[-8,-9]],
+            # Hitbox
+            [[-15,-22],[-8,-22],[8,-22],[15,-22],[15,1],[15,18],[8,18],[-8,18],[-15,18],[-15,1]]]
+
+
+# Sources
+# Font: http://www.1001freefonts.com/data_control.font
+
+mapSize = 5000
+
+
+
+
 
 sock = socket.socket()
-
-print(socket.gethostname())
-
-userName = args[3].replace("_", " ")
-print(args[4:7])
-colour = [float(args[4]),float(args[5]),float(args[6]),]
-dataString = ""
-dataString+=(userName)
-dataString+=("|")
-dataString+=(str(int(colour[0]))+"\\")
-dataString+=(str(int(colour[1]))+"\\")
-dataString+=(str(int(colour[2])))
-print(dataString)
-
-while not connected:
-    host = args[1]
-    port =  int(args[2])
-    try:
-        print("Connecting")
-        sock.connect((host, port))
-        if(sock.recv(512).decode() == "Connected"):
-            print("Connected")
-            connected = True
-            sock.sendall(dataString.encode())
-            print(str(sock.recv(512).decode))
-        else:
-            print("Connection Failed")
-    except:
-        print("Connection Failed")
+port = int(args[1])
+host = socket.gethostname()
+sock.bind((host, port))
+print("Server hosted on:", host+":"+str(port))
 
 
 
-class GetControls(threading.Thread):
-    def __init__(self):
-        super(GetControls, self).__init__()
-        self.delay = 0
+# players = [Tank(100,100,tankShape,[255,255,255], "PLAYER")]
+# bots = [Bot(1000,1000,tankShape, [255,0,0], "BOT"),Bot(2500,2500,tankShape, [255,0,0], "BOT"),Bot(4500,4500,tankShape, [255,0,0], "BOT")]
+
+bots = [Bot(4900,4900,tankShape, [255,255,255], "MYBOT.CA", 5000), Bot(3000,3000,tankShape, [255,255,255], "Another bot", 5000), Bot(1500,1500,tankShape, [255,255,255], "Dat bot doe", 5000)]
+players = []
+clients = []
+msgs = []
+
+class Client(threading.Thread):
+    def __init__(self, client):
+        super(Client, self).__init__()
+        self.client = client
+        self.fails = 0
+        self.fireModeDelay = 0
+        
     
     def run(self):
-        global tabMenuOn, showNames, connected
+        currentTime = time.time()
         while True:
-            self.delay -= 1
+            self.fireModeDelay -= 1
+            oldTime = currentTime
+            currentTime = time.time()
+            deltaTime = currentTime - oldTime + 0.0001
+#             print(deltaTime)
             try:
-                pygame.event.pump()
-    
-                keys = pygame.key.get_pressed()
-                if(keys[pygame.K_TAB]):
-                    tabMenuOn = True
-                else:
-                    tabMenuOn = False
-                if(keys[pygame.K_q] and self.delay < 0):
-                    showNames = not showNames
-                    self.delay = 1000
-                joy = None
-                if(len(gregJoy.joysticks) > 0):
-                    joy = gregJoy.check(gregJoy.joysticks[0])
-                data = [keys, joy]
-                sock.sendall(pickle.dumps(data))
+                data = pickle.loads(self.client.recv(2048))
+#                 print(data)
+                player = players[clients.index(self)] 
+                keys = data[0]
+                joy = data[1]
+                if(keys[pygame.K_UP]): player.propel(7.5*deltaTime)
+                if(keys[pygame.K_DOWN]): player.propel(-7.5*deltaTime)
+                if(keys[pygame.K_LEFT]): player.rotate(-75*deltaTime)
+                if(keys[pygame.K_RIGHT]): player.rotate(75*deltaTime)
+                if(keys[pygame.K_a]): player.gunAngle -= 75*deltaTime
+                if(keys[pygame.K_d]): player.gunAngle += 75*deltaTime
+                if(keys[pygame.K_SPACE]): player.shoot()
+                if(keys[pygame.K_r] and player.dead): 
+                    player.revive(random.randint(100, 4900),random.randint(100, 4900))
+                if(keys[pygame.K_r] and not player.dead): 
+                    player.reload()
+                if(keys[pygame.K_1]): player.fireMode = 0
+                if(keys[pygame.K_2]): player.fireMode = 1
+                if(keys[pygame.K_3]): player.fireMode = 2
+                if(keys[pygame.K_4]): player.fireMode = 3
+                        
+                if(not joy == None):
+                    if(joy[gregJoy.AXIS_PITCH] > DEADZONE): player.propel(-0.75*gregJoy.AXIS_PITCH*10*deltaTime)
+                    if(joy[gregJoy.AXIS_PITCH] < -DEADZONE): player.propel(0.75*gregJoy.AXIS_PITCH*10*deltaTime)
+                    if(joy[gregJoy.AXIS_ROLL] > DEADZONE): player.rotate(7.5*gregJoy.AXIS_PITCH*5*deltaTime)
+                    if(joy[gregJoy.AXIS_ROLL] < -DEADZONE): player.rotate(-7.5*gregJoy.AXIS_PITCH*5*deltaTime)
+                    if(joy[gregJoy.BUTTON_4]): player.gunAngle -= 75*deltaTime
+                    if(joy[gregJoy.BUTTON_5]): player.gunAngle += 75*deltaTime
+                    if(joy[gregJoy.BUTTON_TRIGGER]): player.shoot()
+                    if(joy[gregJoy.BUTTON_3] and player.dead): 
+                        player.revive(random.randint(100, 4900),random.randint(100, 4900))
+                    if(joy[gregJoy.BUTTON_3] and not player.dead): 
+                        player.reload()
+                    if(joy[gregJoy.BUTTON_2] and self.fireModeDelay < 0):
+                        self.fireModeDelay = 500
+                        player.fireMode += 1
+                        if(player.fireMode == 3):
+                            player.fireMode = 0
             except:
                 pass
+#             print(deltaTime)
+                    
+    def send(self, data):
+        global msgs
+        if(self.fails >= 2):
+            msgs.append(["SERVER: "+players[clients.index(self)].name+" disconnected", players[clients.index(self)].colour])
+            players.pop(clients.index(self))
+            clients.remove(self)
+            print("CLIENT REMOVED")
+        try:
+            sendout = pickle.dumps(data)
+            self.client.sendall(sendout)
+            self.fails = 0
+        except:
+            print("send failed", self.fails)
+            self.fails += 1
 
-gc = GetControls()
-gc.start()
- 
-WIDTH, HEIGHT = pygame.display.list_modes()[0]
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
-tabMenuSurface = pygame.Surface((640, 480))
-
-headers = ["NAME", "  POINTS  ", "  KILLS  ", "  DEATHS  "]
-def tabMenu(players):
-    players = sorted(players, key=lambda x: x.score, reverse=True)
-    tabMenuSurface.set_alpha(192)
-    tabMenuSurface.fill([169,169,169])
-    height = 0
-    width = 0
-    nameWidthSurf = nameFont.render("WWWWWWWWWWWWWWWW", 1, [0,0,0])
-    headerWidths = []
-    for head in headers:
-        surf = nameFont.render(head, 1, [255,255,255])
-        if(head == "NAME"):
-            tabMenuSurface.blit(surf, (width+nameWidthSurf.get_width()/2, height))
-            width += nameWidthSurf.get_width()
-        else:
-            tabMenuSurface.blit(surf, (width, height))
-            width += surf.get_width()
-        headerWidths.append(surf.get_width())
-    height += nameWidthSurf.get_height()+5
-    pygame.draw.line(tabMenuSurface, [255,255,255], [0,height], [tabMenuSurface.get_width(), height])
-    height += 5
+class NewClient(threading.Thread):
+    def __init__(self):
+        super(NewClient, self).__init__()
     
-    for player in players:
-        width = 0
-        surf = nameFont.render(player.name, 1, player.colour)
-        tabMenuSurface.blit(surf, (width, height))
-        width += nameWidthSurf.get_width()
-        
-        surf = nameFont.render(str(player.score), 1, player.colour)
-        tabMenuSurface.blit(surf, (width+headerWidths[1]/2, height))
-        width += headerWidths[1]
-        
-        surf = nameFont.render(str(player.kills), 1, player.colour)
-        tabMenuSurface.blit(surf, (width+headerWidths[2]/2, height))
-        width += headerWidths[2]
-        
-        surf = nameFont.render(str(player.deaths), 1, player.colour)
-        tabMenuSurface.blit(surf, (width+headerWidths[3]/2, height))
-        width += headerWidths[3]
-        
-        height += nameWidthSurf.get_height()+5
-        pygame.draw.line(tabMenuSurface, [255,255,255], [0,height], [tabMenuSurface.get_width(), height])
-        height += 5
-        
-        
-    screen.blit(tabMenuSurface, (WIDTH/2-tabMenuSurface.get_width()/2, HEIGHT/2-tabMenuSurface.get_height()/2))
-    
+    def run(self):
+        global msgs
+        sock.listen(5)
+        while True:
+            c, addr = sock.accept()
+            print("Got connection from:", addr)
+            c.send(str("Connected").encode())
+            data = c.recv(1024).decode()
+            data = data.split("|")
+            data[1] = data[1].split("\\")
+            client = Client(c)
+            clients.append(client)
+            client.start()
+            print("Username:", data[0])
+            print("Colour:", data[1][0], data[1][1], data[1][2])
+            players.append(Tank(random.randint(100, 4900),random.randint(100, 4900),tankShape,[int(data[1][0]),int(data[1][1]),int(data[1][2])], data[0], 200))
+            c.sendall("COMPLETE".encode())
+            msgs.append(["SERVER: "+data[0]+" connected", [int(data[1][0]), int(data[1][1]), int(data[1][2])]])
 
 
-toQuit = False
+newClient = NewClient()
+newClient.start()
 
-#TODO Fix closing
+DEADZONE = 0.25
 
-while connected:
-    for event in pygame.event.get():
-        if(event.type == pygame.KEYDOWN):
-            if(event.key == pygame.K_ESCAPE):
-                print("ESCAPE")
-                connected = False
-                print("Connected Status")
+init(mapSize)
+running = True
+currentTime = time.time()
+
+terrainShapes = [
+    [[0,0],[10,0],[10,36],[46,36],[46,46],[0,46]],
+    [[0,0],[36,36],[0,36]],
+    [[0,0],[36,0],[36,36],[0,36]],
+    [[0,0],[72,0],[72,10],[0,10]]
+    ]
+
+terrain = []
+terrainShape = []
+for i in range(random.randint(15,17)):
+    t = Terrain(random.randint(0,4900),random.randint(0,4900), random.choice(terrainShapes), random.randint(3,6), random.randint(0,360))
+    print(t.x, t.y, t.scale)
+    terrainShapes.append(t.getShape())
+    terrain.append(t)
+print(len(terrain))
+
+supplies = []
+lastDrop = time.time()
+print(lastDrop)
+
+while running:
     
-    try:
-        data = sock.recv(32786)
-        data = pickle.loads(data)
-    except:
-        continue
     
-    iteration += 1
-    
-    players, terrain, ID, msgs = data
-    if(not msgs == []):
-        print(msgs)
-    if(len(msgs) > 0):
-        for msg in msgs:
-            messages.append([msg[0], msg[1], 250])
+    oldTime = currentTime
+    currentTime = time.time()
+    deltaTime = currentTime - oldTime
+    if(len(players) > 0):
+        for bot in bots:
+            if(bot.dead):
+                bot.revive(len(players))
+            else:
+                if(len(players)>0):
+                    bot.move(players+bots, 0.060)
+                if(bot.health < 0):
+                    bot.dead = True   
             
-    localPlayer = players[ID]
-    pos = pygame.mouse.get_pos()
-    mouseX = localPlayer.x+(pos[0]-WIDTH/2)
-    mouseY = localPlayer.y+(pos[1]-HEIGHT/2)
-    screen.fill([255,255,255])
+            for bullet in bot.bullets:
+                if(bullet.life > 0):
+                    bullet.move()
+                else:
+                    bot.bullets.remove(bullet)
     for player in players:
-        player.draw(map)
+        if(not player.dead):
+            player.move()
+            if(player.health < 0):
+                player.dead = True
+                player.deaths += 1
         for bullet in player.bullets:
-            bullet.draw(map)
-        if(showNames and not player == localPlayer):
-            surf = nameFont.render(str(player.name), 1, player.colour)
-            map.blit(surf, (player.x-surf.get_width()/2, player.y-surf.get_height()/2-15))
-            pygame.draw.rect(map, [255,0,0], [player.x-50, player.y-5, 100,10], 0)
-            if(player.health > 0):
-                pygame.draw.rect(map, [0,255,0], [player.x-50, player.y-5, player.health/10,10], 0)
-            
-        else:
-            if(abs(mouseX-player.x) < 37 and abs(mouseY-player.y) < 37):
-                surf = nameFont.render(str(player.name), 1, player.colour)
-                map.blit(surf, (mouseX-surf.get_width()/2, mouseY-surf.get_height()/2-15))
-                pygame.draw.rect(map, [255,0,0], [mouseX-50, mouseY-5, 100,10], 0)
-                if(player.health > 0):
-                    pygame.draw.rect(map, [0,255,0], [mouseX-50, mouseY-5, player.health/10,10], 0)
-    for t in terrain:
-        if(type(t) == Supply):
-            if(localPlayer not in t.hasSupplied):
-                t.draw(map)
-        else:    
-            t.draw(map)
+            if(bullet.life > 0):
+                bullet.move()
+            else:
+                player.bullets.remove(bullet)
     
+    if(time.time() - lastDrop >= 60):
+        supplies.append(Supply(random.randint(0,4900),random.randint(0,4900), 2500))
+        lastDrop = time.time()
+        msgs.append(["SERVER: SUPPLY DROP", [255,255,255]])
     
-    screen.blit(map, (-localPlayer.x+WIDTH/2, -localPlayer.y+HEIGHT/2))
-    pygame.draw.rect(map, [255,255,255], (localPlayer.x-WIDTH/2, localPlayer.y-HEIGHT/2, WIDTH, HEIGHT), 25)
-    for player in players:
-        pygame.draw.circle(map, player.colour, (int(player.x), int(player.y)), 35, 0)
-    minimap = pygame.transform.scale(map, (250, 250))
-    screen.blit(minimap, (0,0))
-    pygame.draw.rect(screen, [255,255,255], [0, 0, minimap.get_width(), minimap.get_height()], 1)
-    pygame.draw.rect(map, [0,0,0], (localPlayer.x-WIDTH/2, localPlayer.y-HEIGHT/2, WIDTH, HEIGHT), 25)
-    #Erase code#
-    for player in players:
-        pygame.draw.circle(map, [0,0,0], (int(player.x), int(player.y)), 35, 0)
-        for bullet in player.bullets:
-            pygame.draw.circle(map, [0,0,0], (int(bullet.x), int(bullet.y)), 5, 0)
-        if(showNames):
-            pygame.draw.rect(map, [0,0,0], [player.x-150, player.y-50, 300, 100], 0)
-    pygame.draw.rect(map, [0,0,0], [mouseX-150, mouseY-50, 300,70], 0)
-    
-    pygame.draw.rect(screen, [255,0,0], [WIDTH/2-500,0,1000,25], 0)
-    if(localPlayer.health > 0):
-        pygame.draw.rect(screen, [0,255,0], [WIDTH/2-500,0,localPlayer.health,25], 0)
-    for t in terrain:
-        if(type(t) == Supply):
-            pygame.draw.rect(map, [0,0,0], [t.x-50, t.y-50, 100, 100], 0)
-            pass
-    
-    ammo = menuFont.render(str(localPlayer.clip)+"/"+str(localPlayer.ammo)+"/"+str(localPlayer.fireMode+1), 1, [255,255,255], [0,0,0])
-    ammox = 10
-    ammoy = HEIGHT-ammo.get_height()-50
-    screen.blit(ammo, (ammox, ammoy))
-    
-    
-    if(localPlayer.reloadTimer > 0):
-        arcx = ammox-8
-        arcy = ammoy+ammo.get_rect()[3]/2-(ammo.get_rect()[2]-10)/2
-        arch = ammo.get_rect()[2]+10
-        arcw = ammo.get_rect()[2]+10
-        pygame.draw.arc(screen, [255,255,255], [arcx, arcy, arcw, arch], 0, math.radians(360-(localPlayer.reloadTimer*3)), 3)
-    
-    
-    if(tabMenuOn):
-        tabMenu(players)
-    
-    if(localPlayer.dead):
-        surf = menuFont.render("You Died!", 1, localPlayer.colour)
-        screen.blit(surf, (WIDTH/2-surf.get_width()/2, 250))
-        surf = menuFont.render("Press R to retry", 1, localPlayer.colour)
-        screen.blit(surf, (WIDTH/2-surf.get_width()/2, HEIGHT/2-surf.get_height()*1.5))
-        surf = menuFont.render("Press ESCAPE to quit", 1, localPlayer.colour)
-        screen.blit(surf, (WIDTH/2-surf.get_width()/2, HEIGHT/2+surf.get_height()*1.5))
-       
-    msgY = HEIGHT
-    for message in messages:
-        message[2] -= 1;
-        if(message[2] < 0):
-            messages.remove(message)
-        else:
-            surf = menuFont.render(message[0], 1, message[1])
-            msgY -= surf.get_height()+25
-            screen.blit(surf, (WIDTH-surf.get_width()-25, msgY))
-    
-    
-    pygame.display.flip()
+    for s in supplies:
+        s.update()
+        if(s.life == 0):
+            supplies.remove(s)
 
-print("NOTHING")
-sock.close()
-print("Socket")
-try:
-    gc.join(0.5)
-    print("Threads")
-except:
-    print("ERROR")
-pygame.quit()
-print("Pygame")
-exit(0)
+    
 
-
+    for i in players+bots:
+        iShape =  i.getShape(i.hitbox, i.angle)
+        for p in iShape: 
+            for t in terrainShapes:
+                if(abs(i.x-t[0][0]) < 500 and abs(i.y-t[0][1]) < 500):
+                    if(pointInsidePolygon.check(p[0], p[1], t)):
+                        i.x = i.oldX
+                        i.y = i.oldY
+            for s in supplies:
+                if(abs(i.x-s.x) < 50 and abs(i.y-s.y) < 50):
+                    if(pointInsidePolygon.check(p[0], p[1], s.getShape())):
+                        i = s.resupply(i)
+        for e in players+bots:
+            for bullet in e.bullets:
+                if(abs(i.x-bullet.x) < 75 and abs(i.y-bullet.y) < 75):
+                    if(pointInsidePolygon.check(bullet.x, bullet.y, iShape) and i.health > -1):
+                        i.health -= bullet.damage
+                        if(i==e):
+                            i.score -= 100
+                        else:
+                            e.hitMarkers = 10
+                            e.score += 25
+                            if(i.health < 0):
+                                e.kills += 1
+                                e.score += 500
+                                msgs.append(["KILL: "+e.name+" | "+str(e.fireMode)+" | "+i.name, e.colour])
+                            if(bullet in e.bullets):
+                                e.bullets.remove(bullet)         
+                for t in terrainShapes:
+                    if(abs(bullet.x-t[0][0]) < 300 and abs(bullet.y-t[0][1]) < 300):
+                        if(pointInsidePolygon.check(bullet.x, bullet.y, t)):
+                            if(bullet in e.bullets):
+                                e.bullets.remove(bullet)
+                                
+    for client in clients:
+        client.send([players+bots, terrain+supplies, clients.index(client), msgs])
+        if(not msgs == []):
+            print(msgs)
+    msgs = []
+    
+    
+    if(deltaTime < 0.02):
+        time.sleep(0.02-deltaTime)
 
