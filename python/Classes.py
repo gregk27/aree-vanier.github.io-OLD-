@@ -1,4 +1,4 @@
-# VERSION 1.9
+# VERSION 2.0
 
 import math
 import random
@@ -126,9 +126,7 @@ class Tank(Entity):
                 self.cooldown = 0
                 for i in range(0,5):
                     if(self.clip > 0):
-                        b = Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 2, self.colour, self.gunAngle+random.randint(0,10)-5, 100)
-                        b.range /= 1.5
-                        self.bullets.append(b)
+                        self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 2, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
                         self.clip -= 1   
                         self.cooldown += 30
                 print(self.cooldown)
@@ -167,8 +165,8 @@ class Bot(Tank):
                 targeting = False
             print("targeting")
             try:
-                print(target[self.target] == self)
-                if(not targets[self.target] == self and not self.target.dead):
+                print(targets[self.target] == self)
+                if(not targets[self.target] == self and not targets[self.target].dead):
                     print("NOT BAD")
                     targetX = targets[self.target].x
                     targetY = targets[self.target].y
@@ -188,10 +186,18 @@ class Bot(Tank):
             targetAngle = math.atan2(targetY-self.y, targetX-self.x)*180/math.pi
             self.gunAngle = targetAngle
             self.angle = targetAngle
+            
+        if(abs(self.x-targetX) < 200 or abs(self.y-targetY) < 200):
+            self.shoot()  
+            if(self.clip < 5):
+                self.reload()
         Tank.move(self)
+        
+        
     def revive(self, targetCount):
         self.target = random.randint(0, targetCount)
         super().revive(random.randint(0,4900), random.randint(0,4900))
+        self.fireMode = random.randint(0,4)
         
 class Bullet:
     def __init__(self, x, y, speed, colour, angle, damage):
