@@ -1,4 +1,4 @@
-# VERSION 1.7
+# VERSION 1.8
 # Fixed feed drawing (I hope)
 # Sorted tab menu (Maybe)
 import colorsys
@@ -246,7 +246,7 @@ while connected:
         arcy = ammoy+ammo.get_rect()[3]/2-(ammo.get_rect()[2]-10)/2
         arch = ammo.get_rect()[2]+10
         arcw = ammo.get_rect()[2]+10
-        pygame.draw.arc(screen, [255,255,255], [arcx, arcy, arcw, arch], 0, math.radians(360-(localPlayer.reloadTimer/360)), 3)
+        pygame.draw.arc(screen, [255,255,255], [arcx, arcy, arcw, arch], 0, math.radians(360-(localPlayer.reloadTimer*3)), 3)
     
     
     if(tabMenuOn):
