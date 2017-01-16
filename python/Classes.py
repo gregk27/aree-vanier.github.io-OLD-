@@ -1,4 +1,4 @@
-# VERSION 2.0
+# VERSION 2.1
 
 import math
 import random
@@ -86,6 +86,7 @@ class Tank(Entity):
         self.gunAngle = self.angle
         self.bullets = []
         self.cooldown = 0
+        self.hitMarkers = 0
         
     def draw(self, surface):
         pygame.draw.polygon(surface, self.colour, self.getShape(self.body, self.angle), 1)
