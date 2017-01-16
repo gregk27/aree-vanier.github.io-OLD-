@@ -1,4 +1,4 @@
-# VERSION 1.0
+# VERSION 1.1
 
 import colorsys
 from distutils.command import install
@@ -22,7 +22,6 @@ running = True
 
 
 
-# TODO: ADD SHOTGUN
 
 
 class ClientThread(threading.Thread):
@@ -118,106 +117,146 @@ class Button:
 # Data format:
 # VERSION x.x
 
-try:
-    client = open("Client.py")
-    clientVersion = client.readline()
-    client.close()
-    
-    clientVersion = clientVersion.replace("# VERSION ", "")
-    clientVersion = clientVersion.replace("\n", "")
-except:
-    clientVersion = 0.0
+class VersionCheck(threading.Thread):
+    def __init__(self):
+        super(VersionCheck, self).__init__()
+        self.completed = 0
+        self.total = 10
+    def run(self):
+        try:
+            client = open("Client.py")
+            clientVersion = client.readline()
+            client.close()
+            
+            clientVersion = clientVersion.replace("# VERSION ", "")
+            clientVersion = clientVersion.replace("\n", "")
+        except:
+            clientVersion = 0.0
+        
+        self.completed += 1
+        
+        try:
+            server = open("Server.py")
+            serverVersion = server.readline()
+            server.close()
+            
+            serverVersion = serverVersion.replace("# VERSION ", "")
+            serverVersion = serverVersion.replace("\n", "")
+        except:
+            serverVersion = 0.0
+        
+        self.completed += 1
+        
+        try:
+            classes = open("Classes.py")
+            classesVersion = classes.readline()
+            classes.close()
+            
+            classesVersion = classesVersion.replace("# VERSION ", "")
+            classesVersion = classesVersion.replace("\n", "")
+        except:
+            classesVersion = 0.0
+        
+        self.completed += 1
+        print(clientVersion + " " + serverVersion + " " + classesVersion)
+        
+        
+        webClient = urlopen("https://aree-vanier.github.io/python/Client.py")
+        webClientContents = webClient.read().decode()
+        webClientVersion = webClientContents.split("\n")[0]
+        webClientVersion = webClientVersion.replace("# VERSION ", "")
+        webClientVersion = webClientVersion.replace("\n", "")
+        
+        if(float(webClientVersion) > float(clientVersion)):
+            client = open("Client.py", "w")
+            client.write(webClientContents)
+            client.close()
+        
+        webClient.close()
+        
+        self.completed += 1
+        
+        webServer = urlopen("https://aree-vanier.github.io/python/Server.py")
+        webServerContents = webServer.read().decode()
+        webServerVersion = webServerContents.split("\n")[0]
+        webServerVersion = webServerVersion.replace("# VERSION ", "")
+        webServerVersion = webServerVersion.replace("\n", "")
+        
+        if(float(webServerVersion) > float(serverVersion)):
+            server = open("Server.py", "w")
+            server.write(webServerContents)
+            server.close()
+        
+        webServer.close()
+        
+        self.completed += 1
+        
+        webClasses = urlopen("https://aree-vanier.github.io/python/Classes.py")
+        webClassesContents = webClasses.read().decode()
+        webClassesVersion = webClassesContents.split("\n")[0]
+        webClassesVersion = webClassesVersion.replace("# VERSION ", "")
+        webClassesVersion = webClassesVersion.replace("\n", "")
+        
+        if(float(webClassesVersion) > float(classesVersion)):
+            classes = open("Classes.py", "w")
+            classes.write(webClassesContents)
+            classes.close()
+        
+        webClasses.close()
+        
+        self.completed += 1
+                
+        print(webClientVersion, webServerVersion, webClassesVersion)
+        
+        
+        if(not os.path.exists("pointInsidePolygon.py")):
+            pip = open("pointInsidePolygon.py", "w")
+            webpip = urlopen("https://aree-vanier.github.io/python/pointInsidePolygon.py")
+            pip.write(webpip.read().decode())
+            webpip.close()
+            pip.close()
+            
+        self.completed += 1
+        
+        if(not os.path.exists("gregJoy.py")):
+            gj = open("gregJoy.py", "w")
+            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
+            gj.write(webgj.read().decode())
+            webgj.close()
+            gj.close()
+        
+        self.completed += 1
+        
+        if(not os.path.exists("gregJoy.py")):
+            gj = open("gregJoy.py", "w")
+            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
+            gj.write(webgj.read().decode())
+            webgj.close()
+            gj.close()
+        
+        self.completed += 1
+        
+        if(not os.path.exists("data-latin.ttf")):
+            urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "data-latin.ttf")
 
-try:
-    server = open("Server.py")
-    serverVersion = server.readline()
-    server.close()
-    
-    serverVersion = serverVersion.replace("# VERSION ", "")
-    serverVersion = serverVersion.replace("\n", "")
-except:
-    serverVersion = 0.0
+        self.completed += 1
+        
 
-
-try:
-    classes = open("Classes.py")
-    classesVersion = classes.readline()
-    classes.close()
-    
-    classesVersion = classesVersion.replace("# VERSION ", "")
-    classesVersion = classesVersion.replace("\n", "")
-except:
-    classesVersion = 0.0
-
-print(clientVersion + " " + serverVersion + " " + classesVersion)
-
-
-webClient = urlopen("https://aree-vanier.github.io/python/Client.py")
-webClientContents = webClient.read().decode()
-webClientVersion = webClientContents.split("\n")[0]
-webClientVersion = webClientVersion.replace("# VERSION ", "")
-webClientVersion = webClientVersion.replace("\n", "")
-
-if(float(webClientVersion) > float(clientVersion)):
-    client = open("Client.py", "w")
-    client.write(webClientContents)
-    client.close()
-
-webClient.close()
-
-webServer = urlopen("https://aree-vanier.github.io/python/Server.py")
-webServerContents = webServer.read().decode()
-webServerVersion = webServerContents.split("\n")[0]
-webServerVersion = webServerVersion.replace("# VERSION ", "")
-webServerVersion = webServerVersion.replace("\n", "")
-
-if(float(webServerVersion) > float(serverVersion)):
-    server = open("Server.py", "w")
-    server.write(webServerContents)
-    server.close()
-
-webServer.close()
-
-webClasses = urlopen("https://aree-vanier.github.io/python/Classes.py")
-webClassesContents = webClasses.read().decode()
-webClassesVersion = webClassesContents.split("\n")[0]
-webClassesVersion = webClassesVersion.replace("# VERSION ", "")
-webClassesVersion = webClassesVersion.replace("\n", "")
-
-if(float(webClassesVersion) > float(classesVersion)):
-    classes = open("Classes.py", "w")
-    classes.write(webClassesContents)
-    classes.close()
-
-webClasses.close()
-
-print(webClientVersion, webServerVersion, webClassesVersion)
-
-
-if(not os.path.exists("pointInsidePolygon.py")):
-    pip = open("pointInsidePolygon.py", "w")
-    webpip = urlopen("https://aree-vanier.github.io/python/pointInsidePolygon.py")
-    pip.write(webpip.read().decode())
-    webpip.close()
-    pip.close()
-    
-if(not os.path.exists("gregJoy.py")):
-    gj = open("gregJoy.py", "w")
-    webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
-    gj.write(webgj.read().decode())
-    webgj.close()
-    gj.close()
-
-if(not os.path.exists("gregJoy.py")):
-    gj = open("gregJoy.py", "w")
-    webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
-    gj.write(webgj.read().decode())
-    webgj.close()
-    gj.close()
-
-if(not os.path.exists("data-latin.ttf")):
-    urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "data-latin.ttf")
-
+vc = VersionCheck()
+vc.start()
+font = pygame.font.Font("data-latin.ttf", 30)
+while True:
+    screen.fill([0,0,0])
+    for event in pygame.event.get():
+        if(event.type == pygame.QUIT):
+            running = False
+    out = "Completed "+str(vc.completed) + "/" + str(vc.total)+" actions" 
+    outSurf = font.render(out, 1, [255,255,255])
+    screen.blit(outSurf, (screen.get_width()/2-outSurf.get_width()/2, screen.get_height()/2-outSurf.get_height()/2))
+    pygame.display.flip()
+    if(vc.completed == vc.total):
+        vc.join(1)
+        break;
 
 
 
