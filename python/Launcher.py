@@ -1,8 +1,10 @@
-# VERSION 1.1
+# VERSION 1.2
 
 import colorsys
 from distutils.command import install
 import os
+import pickle
+import socket
 import subprocess
 import threading
 import time
@@ -14,14 +16,14 @@ from pygame.surface import Surface
 
 pygame.init()
 
-screen = pygame.display.set_mode([640,480])
+screen = pygame.display.set_mode([int(960),int(720)])
 pygame.key.set_repeat(50,50)
 pygame.display.set_caption("Launcher")
 
 running = True
 
 
-
+# TODO: fix bot aiming, fix hitmarkers, fix hitmarker erase code, add objectives, add bot count box, show weapon bettter, powerups?, redo project structure, add mini-launcher, redo menu, add saving hosts, change thread exit code, add sound
 
 
 class ClientThread(threading.Thread):
@@ -65,64 +67,48 @@ class ServerThread(threading.Thread):
 # colour = colorsys.hsv_to_rgb(hue/255, 1, 1)
 
 
-class TextField:
-    def __init__(self, x, y, default, type, limit):
-        self.x = x
-        self.y = y
-        self.text = default
-        self.type = type
-        self.limit = limit
-        self.font = pygame.font.Font("data-latin.ttf", 25)
-        self.sizeTest = self.font.render("W"*limit, 1, [0,0,0])
-        self.width = self.sizeTest.get_width()+10
-        self.height = self.sizeTest.get_height()+10
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.focused = False
-        self.surface = pygame.Surface((self.width, self.height))
-        
-    def draw(self, surface):
-        self.text.replace("|", "")
-        self.surface.fill([132,132,132])
-        removeLine = False
-        if(self.focused and len(self.text) < self.limit):
-            self.text += "|"
-            removeLine = True
-        textSurf = self.font.render(self.text, 1, [255,255,255])
-        if(removeLine):
-            self.text = self.text[0:len(self.text)-1]
-        self.surface.blit(textSurf, [5,5])
-        surface.blit(self.surface, (self.x, self.y))
-        
-        
-class Button:
-    def __init__(self, x, y, label):
-        self.x = x
-        self.y = y
-        self.label = label
-        self.font = pygame.font.Font("data-latin.ttf", 25)
-        self.sizeTest = self.font.render(self.label, 1, [0,0,0])
-        self.surface = pygame.Surface((self.sizeTest.get_width()+10, self.sizeTest.get_height()+10))
-        self.rect = pygame.Rect(self.x, self.y, self.surface.get_width(), self.surface.get_height())
-        
-    def draw(self, surface):
-        self.surface.fill([132,132,132])
-        textSurf = self.font.render(self.label, 1, [255,255,255])
-        self.surface.blit(textSurf, [5,5])
-        surface.blit(self.surface, (self.x, self.y))
 
 
+class Server:
+    def __init__(self, name, host, port):
+        self.name = name
+        self.host = host
+        self.port = port
+        self.selected = False
+        self.surf = pygame.Surface((640, 120))
+        self.x = 0
+        self.y = 0
+       
+    def update(self,x,y):
+        self.x = x
+        self.y = y 
+        if(self.selected):
+            self.surf.fill((152,152,152))
+        else:
+            self.surf.fill((105,105,105))
+        pygame.draw.rect(self.surf, [0,0,0], [0,0,640,120], 5)
+        title = titleFont.render(self.name, 1, [255,255,255])
+        subTitle = subtitleFont.render(self.host+":"+str(self.port), 1 ,[255,255,255])
+        self.surf.blit(title, (20,20))
+        self.surf.blit(subTitle, (20,75))
+        self.rect = pygame.rect.Rect(self.x, self.y, self.surf.get_width(), self.surf.get_height())
+        self.rect = pygame.rect.Rect(self.x, self.y, self.surf.get_width(), self.surf.get_height())
 
 
 # Version check code
 # Data format:
 # VERSION x.x
 
+servers = []
+data = []
+
 class VersionCheck(threading.Thread):
     def __init__(self):
         super(VersionCheck, self).__init__()
         self.completed = 0
-        self.total = 10
+        self.total = 11
     def run(self):
+        global servers, data
         try:
             client = open("Client.py")
             clientVersion = client.readline()
@@ -238,7 +224,15 @@ class VersionCheck(threading.Thread):
         
         if(not os.path.exists("data-latin.ttf")):
             urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "data-latin.ttf")
-
+        
+        self.completed += 1
+        
+        
+#         servers,data = pickle.loads(open("launcher.cfg",'r'))
+#         saveFile.close()
+# #         except:
+# #             servers = [Server("Local Machine", socket.gethostname(), 1111), Server("Greg", "KCV-INLABA03FE2", 1111)]
+# #             data = ["name","hue"]
         self.completed += 1
         
 
@@ -258,22 +252,147 @@ while True:
         vc.join(1)
         break;
 
+class TextField:
+    def __init__(self, x, y, default, type, limit):
+        self.x = x
+        self.y = y
+        self.text = default
+        self.type = type
+        self.limit = limit
+        self.font = pygame.font.Font("data-latin.ttf", 25)
+        self.sizeTest = self.font.render("W"*limit, 1, [0,0,0])
+        self.width = self.sizeTest.get_width()+10
+        self.height = self.sizeTest.get_height()+10
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.focused = False
+        self.surface = pygame.Surface((self.width, self.height))
+        
+    def draw(self, surface):
+        self.text.replace("|", "")
+        self.surface.fill([132,132,132])
+        removeLine = False
+        if(self.focused and len(self.text) < self.limit):
+            self.text += "|"
+            removeLine = True
+        textSurf = self.font.render(self.text, 1, [255,255,255])
+        if(removeLine):
+            self.text = self.text[0:len(self.text)-1]
+        self.surface.blit(textSurf, [5,5])
+        surface.blit(self.surface, (self.x, self.y))
+        
+        
+class Button:
+    def __init__(self, x, y, label, fontsize):
+        if(fontsize == 0):
+            fontsize = 25
+        self.x = x
+        self.y = y
+        self.label = label
+        self.font = pygame.font.Font("data-latin.ttf", fontsize)
+        self.sizeTest = self.font.render(self.label, 1, [0,0,0])
+        self.surface = pygame.Surface((self.sizeTest.get_width()+10, self.sizeTest.get_height()+10))
+        self.rect = pygame.Rect(self.x, self.y, self.surface.get_width(), self.surface.get_height())
+        
+    def draw(self, surface):
+        self.surface.fill([132,132,132])
+        textSurf = self.font.render(self.label, 1, [255,255,255])
+        self.surface.blit(textSurf, [5,5])
+        surface.blit(self.surface, (self.x, self.y))
+
+
+
 
 
 focusedField = None
-fields =[TextField(10,10,"KCV-INLABA03FE2", 0, 20),TextField(10,60,"1111",1,4),TextField(10,110,"Name",0,16),TextField(10,160,"Hue",1,3)]
+fields1 =[TextField(10,10,"Name", 0, 30),TextField(10,60,"Hostname", 0, 30),TextField(10,110,"Port",1,4)]
+fields2 =[TextField(10,10,data[0],0,16),TextField(10,60,data[1],1,3)]
+fields3 =[TextField(10,10,"Port",1,4), TextField(10,60,"Bots",1,4)]
 
-clientButton = Button(10, 250, "Launch Client")
-serverButton = Button(10, 300, "Launch Server")
-
+launchServerButton = Button(10, 110, "Launch Server",0 )
+addServerButton = Button(0,0, "Add Server", 0)
+confirmAddServerButton = Button(10, 160, "Add Server", 0)
+view2ConfirmButton = Button(10, 110, "Confirm", 0)
+view2Button = Button(0,50,"View 2",0 )
+cancelButton = Button(10, 210, "Cancel",0)
+hostServerButton = Button(0,680,"Host Server",0)
+playButton = Button(0,600,"Connect", 75)
+playButton.x = screen.get_width()/2-playButton.rect.width
+playButton.rect.x = playButton.x
+playButton.rect.y = playButton.y
 
 ct = ClientThread(1111, "KCV-INLABA03FE2", "NAME", 1)
 st = ServerThread(1111)
+
+titleFont = pygame.font.Font("data-latin.ttf", 26)
+subtitleFont = pygame.font.Font("data-latin.ttf", 18)
+
+
+
+
+
+
+selectedServer = servers[0]
+selectedServer.selected = True
+
+serverSurf = pygame.Surface((640,480))
+def drawServers():
+    global servers
+    serverSurf.fill((105,105,105))
+    for server in servers:
+        server.update(160, 120*servers.index(server)+80)
+        serverSurf.blit(server.surf, (0,120*servers.index(server)))
+        
+    
+    screen.blit(serverSurf, (160, 80))
+
+def view1():
+    for field in fields1:
+        field.draw(screen)
+    confirmAddServerButton.draw(screen)
+    cancelButton.draw(screen)
+
+def view2():
+    for field in fields2:
+        field.draw(screen)
+            
+    try:
+        pass
+        colour = colorsys.hsv_to_rgb(int(fields2[1].text)/255, 1, 1)
+        pygame.draw.rect(screen, [int(colour[0]*255), int(colour[1]*255), int(colour[2]*255)], [560,0,400,400], 0)
+    except:
+        pass
+    view2ConfirmButton.draw(screen)
+    cancelButton.draw(screen)
+
+def view3():
+    for field in fields3:
+        field.draw(screen)
+    launchServerButton.draw(screen)
+    cancelButton.draw(screen)
+
+# Starting Code:
+##print("CT+ST")
+##                st.port = int(fields[1].text)
+##                st.start()
+##                time.sleep(2.5)
+#                 ct.host = fields[0].text
+#                 ct.port = int(fields[1].text)
+#                 ct.name = fields[2].text
+#                 ct.colour = colorsys.hsv_to_rgb(int(fields[3].text)/255, 1, 1)
+#                 ct.colour = [int(ct.colour[0]*255), int(ct.colour[1]*255), int(ct.colour[2]*255)]
+#                 ct.start()
+
+
+## View 0 is main, view 1 is add server, view 2 is change name/colour, view 3 is to lauch a server
+view = 0
+
+
+
 while running:
     for event in pygame.event.get():
         if(event.type == pygame.QUIT):
             running = False
-        if(event.type == pygame.KEYUP):
+        if(event.type == pygame.KEYUP and not focusedField == None):
             if(event.key == pygame.K_BACKSPACE):
                 focusedField.text = focusedField.text[0:len(focusedField.text)-1]
             else:
@@ -282,49 +401,90 @@ while running:
                         focusedField.text+=" "
                     else:
                         focusedField.text += pygame.key.name(event.key)
-                    
-        if(event.type == pygame.MOUSEBUTTONDOWN):
+        if(event.type == pygame.MOUSEBUTTONUP):
             pos = pygame.mouse.get_pos()
-            for field in fields:
-                if(field.focused and not focusedField == field):
-                    field.focused = False
-                if(field.rect.collidepoint(pos)):
-                    field.focused = True
-                    focusedField = field
-            if(clientButton.rect.collidepoint(pos) and not ct.running):
-                print("CT")
-                ct.host = fields[0].text
-                ct.port = int(fields[1].text)
-                ct.name = fields[2].text
-                ct.colour = colorsys.hsv_to_rgb(int(fields[3].text)/255, 1, 1)
-                ct.colour = [int(ct.colour[0]*255), int(ct.colour[1]*255), int(ct.colour[2]*255)]
-                ct.start()
-            if(serverButton.rect.collidepoint(pos) and not ct.running and not st.running):
-                print("CT+ST")
-                st.port = int(fields[1].text)
-                st.start()
-                time.sleep(2.5)
-                ct.host = fields[0].text
-                ct.port = int(fields[1].text)
-                ct.name = fields[2].text
-                ct.colour = colorsys.hsv_to_rgb(int(fields[3].text)/255, 1, 1)
-                ct.colour = [int(ct.colour[0]*255), int(ct.colour[1]*255), int(ct.colour[2]*255)]
-                ct.start()
-        
+            if(view == 0):
+                if(addServerButton.rect.collidepoint(pos)):
+                    view = 1
+                    focusedField = None
+                if(view2Button.rect.collidepoint(pos)):
+                    view = 2
+                    focusedField = None
+                if(hostServerButton.rect.collidepoint(pos)):
+                    view = 3
+                    focusedField = None
+                if(playButton.rect.collidepoint(pos)):
+                    ct.host = selectedServer.host
+                    ct.port = int(selectedServer.port)
+                    ct.name = fields2[0].text
+                    ct.colour = colorsys.hsv_to_rgb(int(fields2[1].text)/255, 1, 1)
+                    ct.colour = [int(ct.colour[0]*255), int(ct.colour[1]*255), int(ct.colour[2]*255)]
+                    ct.start()
+                for server in servers:
+                    if(server.rect.collidepoint(pos)):
+                        print("server: "+str(servers.index(server)))
+                        server.selected = True
+                        selectedServer.selected = False
+                        selectedServer = server
+            if(view == 1):
+                for field in fields1:
+                    if(field.rect.collidepoint(pos)):
+                        if(not focusedField == None):
+                            focusedField.focused = False
+                        field.focused = True
+                        focusedField = field
+                if(confirmAddServerButton.rect.collidepoint(pos)):
+                    servers.append(Server(fields1[0].text, fields1[1].text, fields1[2].text))
+                    view = 0
+                    focusedField = None
+            if(view == 2):
+                for field in fields2:
+                    if(field.rect.collidepoint(pos)):
+                        if(not focusedField == None):
+                            focusedField.focused = False
+                        field.focused = True
+                        focusedField = field
+                if(view2ConfirmButton.rect.collidepoint(pos)):
+                    view = 0
+                    focusedField = None
+            if(view == 3):
+                for field in fields3:
+                    if(field.rect.collidepoint(pos)):
+                        if(not focusedField == None):
+                            focusedField.focused = False
+                        field.focused = True
+                        focusedField = field
+                if(view2ConfirmButton.rect.collidepoint(pos)):
+                    st.port = int(fields3[0].text)
+                    st.start()
+                    view = 0
+                    focusedField = None
+            if(not view == 0):
+                if(cancelButton.rect.collidepoint(pos)):
+                    view = 0
+                    focusedField = None
+
+                
     
     
     screen.fill([0,0,0])
-    for field in fields:
-        field.draw(screen)
-        
-    try:
-        colour = colorsys.hsv_to_rgb(int(fields[3].text)/255, 1, 1)
-        pygame.draw.rect(screen, [int(colour[0]*255), int(colour[1]*255), int(colour[2]*255)], [540,0,100,100], 0)
-    except:
-        pass
+
+
     
-    clientButton.draw(screen)
-    serverButton.draw(screen)
+    if(view == 0):
+        drawServers()
+        addServerButton.draw(screen)
+        view2Button.draw(screen)
+        playButton.draw(screen)
+        hostServerButton.draw(screen)
+    if(view == 1):
+        view1()
+    if(view == 2):
+        view2()
+    if(view == 3):
+        view3()
+        
+        
     
     pygame.display.flip()
     
@@ -336,5 +496,8 @@ while running:
     if(st.toKill): st = ServerThread(1111)
                 
 
+saveFile = open("launcher.cfg", 'wb')
+saveFile.write(pickle.dumps([servers, [fields2[0], fields2[1]]]))
+saveFile.close()
 pygame.quit()
 exit()
