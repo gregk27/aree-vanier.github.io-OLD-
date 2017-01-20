@@ -1,4 +1,4 @@
-# VERSION 2.1
+# VERSION 2.2
 
 import math
 import random
@@ -161,25 +161,25 @@ class Bot(Tank):
         targetX = 2500
         targetY = 2500
         while targeting:
-            print(len(targets))
+#             print(len(targets))
             if(len(targets) < 2):
                 targeting = False
-            print("targeting")
+#             print("targeting")
             try:
-                print(targets[self.target] == self)
+#                 print(targets[self.target] == self)
                 if(not targets[self.target] == self and not targets[self.target].dead):
-                    print("NOT BAD")
+#                     print("NOT BAD")
                     targetX = targets[self.target].x
                     targetY = targets[self.target].y
                     targeting = False
                 else:
-                    print("CHANGE")
+#                     print("CHANGE")
                     self.target=random.randint(0,len(targets))
             except:
                 ("BUG")
                 self.target=random.randint(0,len(targets))
         
-        print("NOT")
+#         print("NOT")
         if(abs(self.x-targetX) < 50 or abs(self.y-targetY) < 50):
             pass
         else:
