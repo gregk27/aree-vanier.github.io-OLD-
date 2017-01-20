@@ -1,4 +1,4 @@
-# VERSION 1.2
+# VERSION 1.5
 
 import colorsys
 from distutils.command import install
@@ -23,8 +23,8 @@ pygame.display.set_caption("Launcher")
 running = True
 
 
-# TODO: fix bot aiming, fix hitmarkers, fix hitmarker erase code, add objectives, add bot count box, show weapon bettter, powerups?, redo project structure, add mini-launcher, redo menu, add saving hosts, change thread exit code, add sound
-
+# TODO: fix bot aiming, fix hitmarkers, fix hitmarker erase code, add objectives, add bot count box, show weapon bettter, powerups?, redo project structure, add mini-launcher, redo menu, add saving hosts, change thread exit code, add sound, prevent bad hue
+# TODO FIX CLIENT ASAP
 
 class ClientThread(threading.Thread):
     def __init__(self, port, host, name, colour):
@@ -46,16 +46,17 @@ class ClientThread(threading.Thread):
 
         
 class ServerThread(threading.Thread):
-    def __init__(self, port):
+    def __init__(self, port, bots):
         super(ServerThread, self).__init__()
         self.port = port
+        self.bots = bots
         self.running = False
         self.toKill = False
     
     def run(self):
         self.running = True
         print("Started")
-        subprocess.call("C:\Python33\python.exe Server.py "+str(self.port))
+        subprocess.call("C:\Python33\python.exe Server.py "+str(self.port)+" "+str(self.bots))
         print("DONE")
         self.toKill = True
 
@@ -231,8 +232,8 @@ class VersionCheck(threading.Thread):
 #         servers,data = pickle.loads(open("launcher.cfg",'r'))
 #         saveFile.close()
 # #         except:
-# #             servers = [Server("Local Machine", socket.gethostname(), 1111), Server("Greg", "KCV-INLABA03FE2", 1111)]
-# #             data = ["name","hue"]
+        servers = [Server("Local Machine", socket.gethostname(), 1111), Server("Greg", "KCV-INLABA03FE2", 1111)]
+        data = ["Name","0"]
         self.completed += 1
         
 
@@ -253,7 +254,8 @@ while True:
         break;
 
 class TextField:
-    def __init__(self, x, y, default, type, limit):
+    def __init__(self, x, y, default, type, limit, label):
+        self.label = label
         self.x = x
         self.y = y
         self.text = default
@@ -261,7 +263,8 @@ class TextField:
         self.limit = limit
         self.font = pygame.font.Font("data-latin.ttf", 25)
         self.sizeTest = self.font.render("W"*limit, 1, [0,0,0])
-        self.width = self.sizeTest.get_width()+10
+        self.labelSurf = self.font.render(self.label, 1, [255,255,255])
+        self.width = self.sizeTest.get_width()+10+self.labelSurf.get_width()+10
         self.height = self.sizeTest.get_height()+10
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.focused = False
@@ -269,7 +272,8 @@ class TextField:
         
     def draw(self, surface):
         self.text.replace("|", "")
-        self.surface.fill([132,132,132])
+        self.surface.fill([0,0,0])
+        pygame.draw.rect(self.surface, [132,132,132], [self.labelSurf.get_width()+5,0, 1000, 100], 0)
         removeLine = False
         if(self.focused and len(self.text) < self.limit):
             self.text += "|"
@@ -277,7 +281,8 @@ class TextField:
         textSurf = self.font.render(self.text, 1, [255,255,255])
         if(removeLine):
             self.text = self.text[0:len(self.text)-1]
-        self.surface.blit(textSurf, [5,5])
+        self.surface.blit(self.labelSurf, (5,5))
+        self.surface.blit(textSurf, [self.labelSurf.get_width()+10,5])
         surface.blit(self.surface, (self.x, self.y))
         
         
@@ -304,9 +309,9 @@ class Button:
 
 
 focusedField = None
-fields1 =[TextField(10,10,"Name", 0, 30),TextField(10,60,"Hostname", 0, 30),TextField(10,110,"Port",1,4)]
-fields2 =[TextField(10,10,data[0],0,16),TextField(10,60,data[1],1,3)]
-fields3 =[TextField(10,10,"Port",1,4), TextField(10,60,"Bots",1,4)]
+fields1 =[TextField(10,10,"Server", 0, 30, "Name:"),TextField(10,60,"", 0, 30, "Hostname:"),TextField(10,110,"1111",1,4, "Port:")]
+fields2 =[TextField(10,10,data[0],0,16, "Username:"),TextField(10,60,data[1],1,3,"Hue:")]
+fields3 =[TextField(10,10,"1111",1,4,"Port:"), TextField(10,60,"0",1,2, "Bots:")]
 
 launchServerButton = Button(10, 110, "Launch Server",0 )
 addServerButton = Button(0,0, "Add Server", 0)
@@ -321,7 +326,7 @@ playButton.rect.x = playButton.x
 playButton.rect.y = playButton.y
 
 ct = ClientThread(1111, "KCV-INLABA03FE2", "NAME", 1)
-st = ServerThread(1111)
+st = ServerThread(1111, 0)
 
 titleFont = pygame.font.Font("data-latin.ttf", 26)
 subtitleFont = pygame.font.Font("data-latin.ttf", 18)
@@ -456,6 +461,7 @@ while running:
                         focusedField = field
                 if(view2ConfirmButton.rect.collidepoint(pos)):
                     st.port = int(fields3[0].text)
+                    st.bots = int(fields3[1].text)
                     st.start()
                     view = 0
                     focusedField = None
@@ -493,7 +499,7 @@ while running:
     
     
     if(ct.toKill): ct = ClientThread(1111, "KCV-INLABA03FE2", "Name", 1)
-    if(st.toKill): st = ServerThread(1111)
+    if(st.toKill): st = ServerThread(1111, 0)
                 
 
 saveFile = open("launcher.cfg", 'wb')
