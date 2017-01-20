@@ -1,4 +1,4 @@
-# VERSION 2.0
+# VERSION 2.1
 # Fixed feed drawing (I hope)
 # Sorted tab menu (Maybe)
 import colorsys
@@ -73,8 +73,8 @@ class GetControls(threading.Thread):
         self.delay = 0
     
     def run(self):
-        global tabMenuOn, showNames, connected
-        while True:
+        global tabMenuOn, showNames, connected, connected
+        while connected:
             self.delay -= 1
             try:
                 pygame.event.pump()
@@ -163,14 +163,15 @@ toQuit = False
 
 #TODO Fix closing
 
+print("Connected", connected)
 while connected:
+    print("RUNNING")
     for event in pygame.event.get():
         if(event.type == pygame.KEYDOWN):
             if(event.key == pygame.K_ESCAPE):
                 print("ESCAPE")
                 connected = False
                 print("Connected Status")
-    
     try:
         data = sock.recv(32786)
         data = pickle.loads(data)
@@ -222,7 +223,7 @@ while connected:
             t.draw(map)
     
     
-    
+    print("DRAWING")
     screen.blit(map, (-localPlayer.x+WIDTH/2, -localPlayer.y+HEIGHT/2))
     pygame.draw.rect(map, [255,255,255], (localPlayer.x-WIDTH/2, localPlayer.y-HEIGHT/2, WIDTH, HEIGHT), 25)
     for player in players:
