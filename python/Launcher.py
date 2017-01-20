@@ -24,7 +24,7 @@ running = True
 
 
 # TODO: fix bot aiming, fix hitmarkers, fix hitmarker erase code, add objectives, add bot count box, show weapon bettter, powerups?, redo project structure, add mini-launcher, redo menu, add saving hosts, change thread exit code, add sound, prevent bad hue
-# TODO FIX CLIENT ASAP
+
 
 class ClientThread(threading.Thread):
     def __init__(self, port, host, name, colour):
@@ -145,7 +145,7 @@ class VersionCheck(threading.Thread):
             classesVersion = 0.0
         
         self.completed += 1
-        print(clientVersion + " " + serverVersion + " " + classesVersion)
+        print(clientVersion, serverVersion, classesVersion)
         
         
         webClient = urlopen("https://aree-vanier.github.io/python/Client.py")
