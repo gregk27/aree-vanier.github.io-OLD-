@@ -1,4 +1,4 @@
-# VERSION 1.8
+# VERSION 2.0
 
 import random
 import time
@@ -50,7 +50,15 @@ print("Server hosted on:", host+":"+str(port))
 # players = [Tank(100,100,tankShape,[255,255,255], "PLAYER")]
 # bots = [Bot(1000,1000,tankShape, [255,0,0], "BOT"),Bot(2500,2500,tankShape, [255,0,0], "BOT"),Bot(4500,4500,tankShape, [255,0,0], "BOT")]
 
-bots = [Bot(4900,4900,tankShape, [255,255,255], "MYBOT.CA", 5000), Bot(3000,3000,tankShape, [255,255,255], "Another bot", 5000), Bot(1500,1500,tankShape, [255,255,255], "Dat bot doe", 5000)]
+
+names = ["mybot.ca", "Another bot", "Dat Bot Doe", "Bot05"]
+bots = []
+
+for i in range(0,int(args[2])):
+    print("new bot")
+    bots.append(Bot(random.randint(0,4900),random.randint(0,4900),tankShape, [255,255,255], random.choice(names), 5000))
+
+
 players = []
 clients = []
 msgs = []
@@ -248,7 +256,7 @@ while running:
                         if(i==e):
                             i.score -= 100
                         else:
-                            e.hitMarkers = 10
+#                             e.hitMarkers = 10
                             e.score += 25
                             if(i.health < 0):
                                 e.kills += 1
