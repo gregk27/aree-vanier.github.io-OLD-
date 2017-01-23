@@ -24,7 +24,7 @@ pygame.display.set_caption("Launcher")
 running = True
 
 
-# TODO: fix hitmarkers, fix hitmarker erase code, add objectives, show weapon bettter, powerups?, redo project structure, add mini-launcher, change thread exit code, add sound
+# TODO: fix hitmarkers, add objectives, show weapon bettter, powerups?, redo project structure, add mini-launcher, change thread exit code, add sound
 # TODO: fix bot rotation, supply drop speed, fix lag, fix view 2 button
 
 class ClientThread(threading.Thread):
@@ -249,13 +249,16 @@ class VersionCheck(threading.Thread):
                     data[1] = entryData[1]
             saveFile.close()
         except:
-            server.append(Server("Greg", "KCV-INLABA03FE2", 1111))
+            servers.append(Server("Greg", "KCV-INLABA03FE2", 1111))
         self.completed += 1
         
 
 vc = VersionCheck()
 vc.start()
-font = pygame.font.Font("data-latin.ttf", 30)
+try:
+    font = pygame.font.Font("data-latin.ttf", 30)
+except:
+    font = pygame.font.SysFont("Arial", 30)
 while True:
     screen.fill([0,0,0])
     for event in pygame.event.get():
