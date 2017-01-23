@@ -149,7 +149,7 @@ class VersionCheck(threading.Thread):
             classesVersion = 0.0
         
         self.completed += 1
-        print(clientVersion + " " + serverVersion + " " + classesVersion)
+        print(clientVersion, serverVersion, classesVersion)
         
         
         webClient = urlopen("https://aree-vanier.github.io/python/Client.py")
