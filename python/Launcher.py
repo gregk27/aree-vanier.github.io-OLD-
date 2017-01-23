@@ -1,9 +1,10 @@
-# VERSION 1.5
+# VERSION 1.6
 
 import colorsys
 from distutils.command import install
 import os
 import pickle
+import random
 import socket
 import subprocess
 import threading
@@ -23,8 +24,8 @@ pygame.display.set_caption("Launcher")
 running = True
 
 
-# TODO: fix bot aiming, fix hitmarkers, fix hitmarker erase code, add objectives, add bot count box, show weapon bettter, powerups?, redo project structure, add mini-launcher, redo menu, add saving hosts, change thread exit code, add sound, prevent bad hue
-
+# TODO: fix hitmarkers, fix hitmarker erase code, add objectives, show weapon bettter, powerups?, redo project structure, add mini-launcher, change thread exit code, add sound
+# TODO: fix bot rotation, supply drop speed, fix lag, fix view 2 button
 
 class ClientThread(threading.Thread):
     def __init__(self, port, host, name, colour):
@@ -79,10 +80,13 @@ class Server:
         self.surf = pygame.Surface((640, 120))
         self.x = 0
         self.y = 0
+        self.rect = pygame.Rect(self.x, self.y, 640,120)
        
     def update(self,x,y):
         self.x = x
         self.y = y 
+        self.rect.x = x
+        self.rect.y = y
         if(self.selected):
             self.surf.fill((152,152,152))
         else:
@@ -145,7 +149,7 @@ class VersionCheck(threading.Thread):
             classesVersion = 0.0
         
         self.completed += 1
-        print(clientVersion, serverVersion, classesVersion)
+        print(clientVersion + " " + serverVersion + " " + classesVersion)
         
         
         webClient = urlopen("https://aree-vanier.github.io/python/Client.py")
@@ -229,11 +233,23 @@ class VersionCheck(threading.Thread):
         self.completed += 1
         
         
-#         servers,data = pickle.loads(open("launcher.cfg",'r'))
-#         saveFile.close()
-# #         except:
-        servers = [Server("Local Machine", socket.gethostname(), 1111), Server("Greg", "KCV-INLABA03FE2", 1111)]
+        #data format: SERVER|LABEL|HOST|PORT
+        servers = [Server("Local Machine", socket.gethostname(), 1111)]
         data = ["Name","0"]
+        try:
+            saveFile = open("launcher.cfg",'r')
+            saveData = saveFile.readlines()
+            for entry in saveData:
+                entryData = entry.split("|")
+                if(entryData[0] == "SERVER"):
+                    servers.append(Server(entryData[1], entryData[2], int(entryData[3])))
+                if(entryData[0] == "NAME"):
+                    data[0] = entryData[1]
+                if(entryData[0] == "HUE"):
+                    data[1] = entryData[1]
+            saveFile.close()
+        except:
+            server.append(Server("Greg", "KCV-INLABA03FE2", 1111))
         self.completed += 1
         
 
@@ -317,13 +333,16 @@ launchServerButton = Button(10, 110, "Launch Server",0 )
 addServerButton = Button(0,0, "Add Server", 0)
 confirmAddServerButton = Button(10, 160, "Add Server", 0)
 view2ConfirmButton = Button(10, 110, "Confirm", 0)
-view2Button = Button(0,50,"View 2",0 )
+view2Button = Button(0,100,"Options",0 )
 cancelButton = Button(10, 210, "Cancel",0)
 hostServerButton = Button(0,680,"Host Server",0)
 playButton = Button(0,600,"Connect", 75)
 playButton.x = screen.get_width()/2-playButton.rect.width
 playButton.rect.x = playButton.x
 playButton.rect.y = playButton.y
+deleteServerButton = Button(0,50,"Delete Server", 20)
+pageUpButton = Button(825,screen.get_height()/3-50, "Page Up",0)
+pageDownButton = Button(825,screen.get_height()/3+10, "Page Down",0)
 
 ct = ClientThread(1111, "KCV-INLABA03FE2", "NAME", 1)
 st = ServerThread(1111, 0)
@@ -334,18 +353,19 @@ subtitleFont = pygame.font.Font("data-latin.ttf", 18)
 
 
 
-
+page = 0
 
 selectedServer = servers[0]
 selectedServer.selected = True
 
 serverSurf = pygame.Surface((640,480))
 def drawServers():
-    global servers
+    global servers, page
     serverSurf.fill((105,105,105))
-    for server in servers:
-        server.update(160, 120*servers.index(server)+80)
-        serverSurf.blit(server.surf, (0,120*servers.index(server)))
+    for server in servers[page:page+4]:
+        print(servers.index(server),"\t",servers[page:page+4].index(server))
+        server.update(160, 120*servers[page:page+4].index(server)+80)
+        serverSurf.blit(server.surf, (0,120*servers[page:page+4].index(server)))
         
     
     screen.blit(serverSurf, (160, 80))
@@ -367,7 +387,6 @@ def view2():
     except:
         pass
     view2ConfirmButton.draw(screen)
-    cancelButton.draw(screen)
 
 def view3():
     for field in fields3:
@@ -402,10 +421,14 @@ while running:
                 focusedField.text = focusedField.text[0:len(focusedField.text)-1]
             else:
                 if(not focusedField == None and not (event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT) and len(focusedField.text) < focusedField.limit):
-                    if(event.key == pygame.K_SPACE):
+                    if(event.key == pygame.K_SPACE and focusedField.type == 0):
                         focusedField.text+=" "
                     else:
-                        focusedField.text += pygame.key.name(event.key)
+                        if(focusedField.type == 1):
+                            if(pygame.key.name(event.key) in ['0','1','2','3','4','5','6','7','8','9']):
+                                focusedField.text += pygame.key.name(event.key)
+                        else:
+                            focusedField.text += pygame.key.name(event.key)
         if(event.type == pygame.MOUSEBUTTONUP):
             pos = pygame.mouse.get_pos()
             if(view == 0):
@@ -418,19 +441,38 @@ while running:
                 if(hostServerButton.rect.collidepoint(pos)):
                     view = 3
                     focusedField = None
+                if(deleteServerButton.rect.collidepoint(pos)):
+                    if(not selectedServer == servers[0]):
+                        servers.remove(selectedServer)
+                        pos = servers[0].x+10, servers[0].y+10
                 if(playButton.rect.collidepoint(pos)):
                     ct.host = selectedServer.host
                     ct.port = int(selectedServer.port)
                     ct.name = fields2[0].text
+                    if(fields2[1].text == ""):
+                        fields2[1].text = random.randint(0,255)
                     ct.colour = colorsys.hsv_to_rgb(int(fields2[1].text)/255, 1, 1)
                     ct.colour = [int(ct.colour[0]*255), int(ct.colour[1]*255), int(ct.colour[2]*255)]
                     ct.start()
-                for server in servers:
+                for server in servers[page:page+4]:
                     if(server.rect.collidepoint(pos)):
                         print("server: "+str(servers.index(server)))
                         server.selected = True
                         selectedServer.selected = False
                         selectedServer = server
+                        
+                if(len(servers) > 4):
+                    if(pageUpButton.rect.collidepoint(pos)):
+                        page -= 1
+                        if(page < 0):
+                            page =0
+                    if(pageDownButton.rect.collidepoint(pos)):
+                        page += 1
+                        if(page+3 > len(servers)):
+                            page -=1
+                else:
+                    page = 0
+                    
             if(view == 1):
                 for field in fields1:
                     if(field.rect.collidepoint(pos)):
@@ -442,6 +484,7 @@ while running:
                     servers.append(Server(fields1[0].text, fields1[1].text, fields1[2].text))
                     view = 0
                     focusedField = None
+                    fields1 =[TextField(10,10,"Server", 0, 30, "Name:"),TextField(10,60,"", 0, 30, "Hostname:"),TextField(10,110,"1111",1,4, "Port:")]
             if(view == 2):
                 for field in fields2:
                     if(field.rect.collidepoint(pos)):
@@ -459,16 +502,21 @@ while running:
                             focusedField.focused = False
                         field.focused = True
                         focusedField = field
-                if(view2ConfirmButton.rect.collidepoint(pos)):
+                if(launchServerButton.rect.collidepoint(pos)):
+                    if(fields3[0].text == ""):
+                        fields3[0].text = "1111"
+                    if(fields3[1].text == ""):
+                        fields3[1].text = "0"
                     st.port = int(fields3[0].text)
                     st.bots = int(fields3[1].text)
                     st.start()
                     view = 0
                     focusedField = None
-            if(not view == 0):
+            if(not view == 0 or not view == 2):
                 if(cancelButton.rect.collidepoint(pos)):
                     view = 0
                     focusedField = None
+                    fields1 =[TextField(10,10,"Server", 0, 30, "Name:"),TextField(10,60,"", 0, 30, "Hostname:"),TextField(10,110,"1111",1,4, "Port:")]
 
                 
     
@@ -483,6 +531,10 @@ while running:
         view2Button.draw(screen)
         playButton.draw(screen)
         hostServerButton.draw(screen)
+        deleteServerButton.draw(screen)
+        if(len(servers) > 4):
+            pageUpButton.draw(screen)
+            pageDownButton.draw(screen)
     if(view == 1):
         view1()
     if(view == 2):
@@ -502,8 +554,16 @@ while running:
     if(st.toKill): st = ServerThread(1111, 0)
                 
 
-saveFile = open("launcher.cfg", 'wb')
-saveFile.write(pickle.dumps([servers, [fields2[0], fields2[1]]]))
+saveFile = open("launcher.cfg", 'w')
+for server in servers:
+    if(not server == servers[0]):
+        outString = "SERVER|"
+        outString+=server.name+"|"
+        outString+=server.host+"|"
+        outString+=str(server.port)+"|"
+        saveFile.write(outString+"\n")
+saveFile.write("NAME|"+fields2[0].text+"|\n")
+saveFile.write("HUE|"+fields2[1].text+"|\n")
 saveFile.close()
 pygame.quit()
 exit()
