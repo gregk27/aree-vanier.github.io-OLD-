@@ -14,6 +14,8 @@ pygame.display.set_caption("Launcher")
 
 running = True
 
+if(os.path.exists("Resources/res/icon.png")):
+    screen.set_icon(pygame.image.load("Resources/res/icon.png"))
 
 # TODO: fix hitmarkers, add objectives, show weapon bettter, powerups?, redo project structure, add mini-launcher, change thread exit code, add sound
 # TODO: fix bot rotation, supply drop speed, fix lag, fix options button
@@ -99,7 +101,7 @@ class VersionCheck(threading.Thread):
     def __init__(self):
         super(VersionCheck, self).__init__()
         self.completed = 0
-        self.total = 12
+        self.total = 13
     def run(self):
         global servers, data
         try:
@@ -221,7 +223,13 @@ class VersionCheck(threading.Thread):
         self.completed += 1
         
         if(not os.path.exists("Resources/res/data-latin.ttf")):
-            urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "res/data-latin.ttf")
+            urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "Resources/res/data-latin.ttf")
+        
+        self.completed += 1
+        
+        if(not os.path.exists("Resources/res/icon.png")):
+            urlretrieve("https://aree-vanier.github.io/Icon.png", "Resources/res/icon.png")
+            screen.set_icon(pygame.image.load("Resources/res/icon.png"))
         
         self.completed += 1
         
