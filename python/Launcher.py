@@ -1,4 +1,4 @@
-# VERSION 2.5
+# VERSION 2.6
 
 import colorsys, os, pickle, random, socket, subprocess, threading, time, pygame  # @UnusedImport
 from urllib.request import urlopen, urlretrieve
@@ -99,7 +99,7 @@ class VersionCheck(threading.Thread):
     def __init__(self):
         super(VersionCheck, self).__init__()
         self.completed = 0
-        self.total = 11
+        self.total = 12
     def run(self):
         global servers, data
         try:
@@ -215,8 +215,13 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
-        if(not os.path.exists("data-latin.ttf")):
-            urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "data-latin.ttf")
+        if not os.path.exists("res"):
+            os.makedirs("res")
+        
+        self.completed += 1
+        
+        if(not os.path.exists("res/data-latin.ttf")):
+            urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "res/data-latin.ttf")
         
         self.completed += 1
         
@@ -226,7 +231,7 @@ class VersionCheck(threading.Thread):
         servers = [Server("Local Machine", socket.gethostname(), 1111)]
         data = ["Name","0"]
         try:
-            saveFile = open("launcher.cfg",'r')
+            saveFile = open("res/launcher.cfg",'r')
             saveData = saveFile.readlines()
             for entry in saveData:
                 entryData = entry.split("|")
@@ -246,7 +251,7 @@ vc = VersionCheck()
 vc.start()
 
 try:
-    font = pygame.font.Font("data-latin.ttf", 30)
+    font = pygame.font.Font("res/data-latin.ttf", 30)
 except:
     font = pygame.font.SysFont("Arial", 30)
     
@@ -278,7 +283,7 @@ class TextField:
         #Type: 0 for alphanumeric, 1 for numbers only
         self.type = type
         self.limit = limit
-        self.font = pygame.font.Font("data-latin.ttf", 25)
+        self.font = pygame.font.Font("res/data-latin.ttf", 25)
         
         # Size for biggest possible entry
         self.sizeTest = self.font.render("W"*limit, 1, [0,0,0])
@@ -314,7 +319,7 @@ class Button:
         self.x = x
         self.y = y
         self.label = label
-        self.font = pygame.font.Font("data-latin.ttf", fontsize)
+        self.font = pygame.font.Font("res/data-latin.ttf", fontsize)
         self.sizeTest = self.font.render(self.label, 1, [0,0,0])
         self.surface = pygame.Surface((self.sizeTest.get_width()+10, self.sizeTest.get_height()+10))
         self.rect = pygame.Rect(self.x, self.y, self.surface.get_width(), self.surface.get_height())
@@ -355,8 +360,8 @@ pageDownButton = Button(825,screen.get_height()/3+10, "Page Down",0)
 ct = ClientThread(1111, "KCV-INLABA03FE2", "NAME", 1)
 st = ServerThread(1111, 0)
 
-titleFont = pygame.font.Font("data-latin.ttf", 26)
-subtitleFont = pygame.font.Font("data-latin.ttf", 18)
+titleFont = pygame.font.Font("res/data-latin.ttf", 26)
+subtitleFont = pygame.font.Font("res/data-latin.ttf", 18)
 
 
 
@@ -580,7 +585,7 @@ while running:
                 
 
 #Save server list, usename and colour
-saveFile = open("launcher.cfg", 'w')
+saveFile = open("res/launcher.cfg", 'w')
 for server in servers:
     if(not server == servers[0]):
         outString = "SERVER|"
