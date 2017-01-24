@@ -292,18 +292,15 @@ class TextField:
     def draw(self, surface):
         self.surface.fill([0,0,0])
         pygame.draw.rect(self.surface, [132,132,132], [self.labelSurf.get_width()+5,0, 1000, 100], 0)
-        removeLine = False
         
         # Draw in '|' if it's focused
         if(self.focused and len(self.text) < self.limit):
             self.text += "|"
-            removeLine = True
             
         textSurf = self.font.render(self.text, 1, [255,255,255])
         
         # Delete all '|' characters
-        if(removeLine):
-            self.text.replace("|", "")
+        self.text = self.text.replace("|", "")
             
         self.surface.blit(self.labelSurf, (5,5))
         self.surface.blit(textSurf, [self.labelSurf.get_width()+10,5])
