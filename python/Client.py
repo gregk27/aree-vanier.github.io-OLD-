@@ -1,4 +1,4 @@
-# VERSION 2.5
+# VERSION 2.6
 import pickle, sys, threading, pygame, socket, gregJoy #@UnusedImports
 
 from Classes import *  # @UnusedWildImport
@@ -188,6 +188,13 @@ while connected:
     mouseX = localPlayer.x+(pos[0]-WIDTH/2)
     mouseY = localPlayer.y+(pos[1]-HEIGHT/2)
     screen.fill([255,255,255])
+    
+    #Gridlines
+    for x in range(0,5000,1000):
+        pygame.draw.line(map, [255,255,255], (x,0), (x,5000), 2)
+            
+    for y in range(0,5000,1000):
+        pygame.draw.line(map, [255,255,255], (0,y), (5000,y), 2)
     
     #Hitmarkers
     if(localPlayer.hitMarkers > 0):
