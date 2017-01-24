@@ -140,7 +140,7 @@ class VersionCheck(threading.Thread):
         print(clientVersion, serverVersion, classesVersion)
         
         
-        webClient = urlopen("Resources/https://aree-vanier.github.io/python/Client.py")
+        webClient = urlopen("https://aree-vanier.github.io/python/Client.py")
         webClientContents = webClient.read().decode()
         webClientVersion = webClientContents.split("\n")[0]
         webClientVersion = webClientVersion.replace("# VERSION ", "")
@@ -155,7 +155,7 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
-        webServer = urlopen("Resources/https://aree-vanier.github.io/python/Server.py")
+        webServer = urlopen("https://aree-vanier.github.io/python/Server.py")
         webServerContents = webServer.read().decode()
         webServerVersion = webServerContents.split("\n")[0]
         webServerVersion = webServerVersion.replace("# VERSION ", "")
@@ -170,7 +170,7 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
-        webClasses = urlopen("Resources/https://aree-vanier.github.io/python/Classes.py")
+        webClasses = urlopen("https://aree-vanier.github.io/python/Classes.py")
         webClassesContents = webClasses.read().decode()
         webClassesVersion = webClassesContents.split("\n")[0]
         webClassesVersion = webClassesVersion.replace("# VERSION ", "")
@@ -190,7 +190,7 @@ class VersionCheck(threading.Thread):
         
         if(not os.path.exists("Resources/pointInsidePolygon.py")):
             pip = open("Resources/pointInsidePolygon.py", "w")
-            webpip = urlopen("Resources/https://aree-vanier.github.io/python/pointInsidePolygon.py")
+            webpip = urlopen("https://aree-vanier.github.io/python/pointInsidePolygon.py")
             pip.write(webpip.read().decode())
             webpip.close()
             pip.close()
@@ -199,7 +199,7 @@ class VersionCheck(threading.Thread):
         
         if(not os.path.exists("Resources/gregJoy.py")):
             gj = open("Resources/gregJoy.py", "w")
-            webgj = urlopen("Resources/https://aree-vanier.github.io/python/gregJoy.py")
+            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
             gj.write(webgj.read().decode())
             webgj.close()
             gj.close()
@@ -208,7 +208,7 @@ class VersionCheck(threading.Thread):
         
         if(not os.path.exists("Resources/gregJoy.py")):
             gj = open("Resources/gregJoy.py", "w")
-            webgj = urlopen("Resources/https://aree-vanier.github.io/python/gregJoy.py")
+            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
             gj.write(webgj.read().decode())
             webgj.close()
             gj.close()
