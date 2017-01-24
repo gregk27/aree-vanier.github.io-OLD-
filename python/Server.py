@@ -1,4 +1,4 @@
-# VERSION 2.5
+# VERSION 2.6
 
 import random, time, pygame, sys, socket, threading, gregJoy, pointInsidePolygon, pickle  # @UnusedImport
 
@@ -39,7 +39,7 @@ print("Server hosted on:", host+":"+str(port))
 
 
 #Create bots
-names = ["mybot.ca", "Another bot", "Dat Bot Doe", "Bot05"]
+names = ["mybot.ca", "Another bot", "Dat Bot Doe", "Bot051144", "ThisIsNotABot", "Sake!", "Michael Botjayi", "Bots-R-Us", "xXx_ambotr_xXx", "You're Winner!", "TheQuickBrownFox", "The good", "The bad", "The ugly ;(", "xXx_proreaps_xXx", "ProGenji", "Bot Cnena", "Glitchy", "WhyDoYouStruggle", "The Bot Johnson"]
 bots = []
 
 for i in range(0,int(args[2])):
