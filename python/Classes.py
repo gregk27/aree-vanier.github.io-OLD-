@@ -1,4 +1,4 @@
-# VERSION 2.5
+# VERSION 2.6
 
 import math, random
 
@@ -90,8 +90,10 @@ class Tank(Entity):
         self.hitMarkers = 0
         
     def draw(self, surface):
+        pygame.draw.polygon(surface, [0,0,0], self.getShape(self.body, self.angle), 0)
         pygame.draw.polygon(surface, self.colour, self.getShape(self.body, self.angle), 1)
         if(not self.dead):
+            pygame.draw.polygon(surface, [0,0,0], self.getShape(self.gun, self.gunAngle), 0)
             pygame.draw.polygon(surface, self.colour, self.getShape(self.gun, self.gunAngle), 1)
         
     def rotate(self, angle):
