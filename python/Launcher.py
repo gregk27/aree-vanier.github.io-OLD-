@@ -103,7 +103,7 @@ class VersionCheck(threading.Thread):
     def run(self):
         global servers, data
         try:
-            client = open("Client.py")
+            client = open("Resources/Client.py")
             clientVersion = client.readline()
             client.close()
             
@@ -115,7 +115,7 @@ class VersionCheck(threading.Thread):
         self.completed += 1
         
         try:
-            server = open("Server.py")
+            server = open("Resources/Server.py")
             serverVersion = server.readline()
             server.close()
             
@@ -127,7 +127,7 @@ class VersionCheck(threading.Thread):
         self.completed += 1
         
         try:
-            classes = open("Classes.py")
+            classes = open("Resources/Classes.py")
             classesVersion = classes.readline()
             classes.close()
             
@@ -140,14 +140,14 @@ class VersionCheck(threading.Thread):
         print(clientVersion, serverVersion, classesVersion)
         
         
-        webClient = urlopen("https://aree-vanier.github.io/python/Client.py")
+        webClient = urlopen("Resources/https://aree-vanier.github.io/python/Client.py")
         webClientContents = webClient.read().decode()
         webClientVersion = webClientContents.split("\n")[0]
         webClientVersion = webClientVersion.replace("# VERSION ", "")
         webClientVersion = webClientVersion.replace("\n", "")
         
         if(float(webClientVersion) > float(clientVersion)):
-            client = open("Client.py", "w")
+            client = open("Resources/Client.py", "w")
             client.write(webClientContents)
             client.close()
         
@@ -155,14 +155,14 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
-        webServer = urlopen("https://aree-vanier.github.io/python/Server.py")
+        webServer = urlopen("Resources/https://aree-vanier.github.io/python/Server.py")
         webServerContents = webServer.read().decode()
         webServerVersion = webServerContents.split("\n")[0]
         webServerVersion = webServerVersion.replace("# VERSION ", "")
         webServerVersion = webServerVersion.replace("\n", "")
         
         if(float(webServerVersion) > float(serverVersion)):
-            server = open("Server.py", "w")
+            server = open("Resources/Server.py", "w")
             server.write(webServerContents)
             server.close()
         
@@ -170,14 +170,14 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
-        webClasses = urlopen("https://aree-vanier.github.io/python/Classes.py")
+        webClasses = urlopen("Resources/https://aree-vanier.github.io/python/Classes.py")
         webClassesContents = webClasses.read().decode()
         webClassesVersion = webClassesContents.split("\n")[0]
         webClassesVersion = webClassesVersion.replace("# VERSION ", "")
         webClassesVersion = webClassesVersion.replace("\n", "")
         
         if(float(webClassesVersion) > float(classesVersion)):
-            classes = open("Classes.py", "w")
+            classes = open("Resources/Classes.py", "w")
             classes.write(webClassesContents)
             classes.close()
         
@@ -188,39 +188,39 @@ class VersionCheck(threading.Thread):
         print(webClientVersion, webServerVersion, webClassesVersion)
         
         
-        if(not os.path.exists("pointInsidePolygon.py")):
-            pip = open("pointInsidePolygon.py", "w")
-            webpip = urlopen("https://aree-vanier.github.io/python/pointInsidePolygon.py")
+        if(not os.path.exists("Resources/pointInsidePolygon.py")):
+            pip = open("Resources/pointInsidePolygon.py", "w")
+            webpip = urlopen("Resources/https://aree-vanier.github.io/python/pointInsidePolygon.py")
             pip.write(webpip.read().decode())
             webpip.close()
             pip.close()
             
         self.completed += 1
         
-        if(not os.path.exists("gregJoy.py")):
-            gj = open("gregJoy.py", "w")
-            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
+        if(not os.path.exists("Resources/gregJoy.py")):
+            gj = open("Resources/gregJoy.py", "w")
+            webgj = urlopen("Resources/https://aree-vanier.github.io/python/gregJoy.py")
             gj.write(webgj.read().decode())
             webgj.close()
             gj.close()
         
         self.completed += 1
         
-        if(not os.path.exists("gregJoy.py")):
-            gj = open("gregJoy.py", "w")
-            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
+        if(not os.path.exists("Resources/gregJoy.py")):
+            gj = open("Resources/gregJoy.py", "w")
+            webgj = urlopen("Resources/https://aree-vanier.github.io/python/gregJoy.py")
             gj.write(webgj.read().decode())
             webgj.close()
             gj.close()
         
         self.completed += 1
         
-        if not os.path.exists("res"):
-            os.makedirs("res")
+        if not os.path.exists("Resources/res"):
+            os.makedirs("Resources/res")
         
         self.completed += 1
         
-        if(not os.path.exists("res/data-latin.ttf")):
+        if(not os.path.exists("Resources/res/data-latin.ttf")):
             urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "res/data-latin.ttf")
         
         self.completed += 1
@@ -231,7 +231,7 @@ class VersionCheck(threading.Thread):
         servers = [Server("Local Machine", socket.gethostname(), 1111)]
         data = ["Name","0"]
         try:
-            saveFile = open("res/launcher.cfg",'r')
+            saveFile = open("Resources/res/launcher.cfg",'r')
             saveData = saveFile.readlines()
             for entry in saveData:
                 entryData = entry.split("|")
@@ -251,7 +251,7 @@ vc = VersionCheck()
 vc.start()
 
 try:
-    font = pygame.font.Font("res/data-latin.ttf", 30)
+    font = pygame.font.Font("Resources/res/data-latin.ttf", 30)
 except:
     font = pygame.font.SysFont("Arial", 30)
     
@@ -283,7 +283,7 @@ class TextField:
         #Type: 0 for alphanumeric, 1 for numbers only
         self.type = type
         self.limit = limit
-        self.font = pygame.font.Font("res/data-latin.ttf", 25)
+        self.font = pygame.font.Font("Resources/res/data-latin.ttf", 25)
         
         # Size for biggest possible entry
         self.sizeTest = self.font.render("W"*limit, 1, [0,0,0])
@@ -319,7 +319,7 @@ class Button:
         self.x = x
         self.y = y
         self.label = label
-        self.font = pygame.font.Font("res/data-latin.ttf", fontsize)
+        self.font = pygame.font.Font("Resources/res/data-latin.ttf", fontsize)
         self.sizeTest = self.font.render(self.label, 1, [0,0,0])
         self.surface = pygame.Surface((self.sizeTest.get_width()+10, self.sizeTest.get_height()+10))
         self.rect = pygame.Rect(self.x, self.y, self.surface.get_width(), self.surface.get_height())
@@ -360,8 +360,8 @@ pageDownButton = Button(825,screen.get_height()/3+10, "Page Down",0)
 ct = ClientThread(1111, "KCV-INLABA03FE2", "NAME", 1)
 st = ServerThread(1111, 0)
 
-titleFont = pygame.font.Font("res/data-latin.ttf", 26)
-subtitleFont = pygame.font.Font("res/data-latin.ttf", 18)
+titleFont = pygame.font.Font("Resources/res/data-latin.ttf", 26)
+subtitleFont = pygame.font.Font("Resources/res/data-latin.ttf", 18)
 
 
 
@@ -585,7 +585,7 @@ while running:
                 
 
 #Save server list, usename and colour
-saveFile = open("res/launcher.cfg", 'w')
+saveFile = open("Resources/res/launcher.cfg", 'w')
 for server in servers:
     if(not server == servers[0]):
         outString = "SERVER|"
