@@ -1,20 +1,9 @@
-# VERSION 2.1
-# Fixed feed drawing (I hope)
-# Sorted tab menu (Maybe)
-import colorsys
-import math
-import pickle
-import sys
-import threading
+# VERSION 2.5
+import pickle, sys, threading, pygame, socket, gregJoy #@UnusedImports
 
-import pygame, socket
-
-from Classes import *
-import gregJoy
+from Classes import *  # @UnusedWildImport
 
 
-## TO ADD:
-#Sort scoreboard
 pygame.init()
 gregJoy.init()
 
@@ -22,12 +11,11 @@ gregJoy.init()
 args = sys.argv
 print(args)
 
-map = pygame.Surface((5000, 5000))
+map = pygame.Surface((5000, 5000))   #@ReservedAssignment
 nameFont = pygame.font.Font("data-latin.ttf", 25)
 menuFont = pygame.font.Font("data-latin.ttf", 50)
 connected = False
 
-iteration = 0
 
 tabMenuOn = False
 showNames = True
@@ -38,6 +26,7 @@ sock = socket.socket()
 
 print(socket.gethostname())
 
+#Set up username and colour to send to server
 userName = args[3].replace("_", " ")
 print(args[4:7])
 colour = [float(args[4]),float(args[5]),float(args[6]),]
@@ -49,6 +38,8 @@ dataString+=(str(int(colour[1]))+"\\")
 dataString+=(str(int(colour[2])))
 print(dataString)
 
+
+#Connect to server
 while not connected:
     host = args[1]
     port =  int(args[2])
@@ -67,13 +58,15 @@ while not connected:
 
 
 
+#Thread to get controls and send to server
 class GetControls(threading.Thread):
     def __init__(self):
         super(GetControls, self).__init__()
+        #delay for showNames toggle
         self.delay = 0
     
     def run(self):
-        global tabMenuOn, showNames, connected, connected
+        global tabMenuOn, showNames, connected
         while connected:
             self.delay -= 1
             try:
@@ -101,6 +94,7 @@ gc.start()
 WIDTH, HEIGHT = pygame.display.list_modes()[0]
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
+#set up hitmarkers
 hitmarkers = pygame.Surface((100,100))
 pygame.draw.line(hitmarkers, [255,255,255], [0,0], [1000,1000], 5)
 pygame.draw.line(hitmarkers, [255,255,255], [90,0], [0,90], 5)
@@ -108,17 +102,20 @@ pygame.draw.circle(hitmarkers, [0,0,0], (int(hitmarkers.get_width()/2), int(hitm
 
 
 
+#Draw tab menu
 tabMenuSurface = pygame.Surface((640, 480))
-
 headers = ["NAME", "  POINTS  ", "  KILLS  ", "  DEATHS  "]
 def tabMenu(players):
+    #Sort a local copy of players based on score
     players = sorted(players, key=lambda x: x.score, reverse=True)
+    
     tabMenuSurface.set_alpha(192)
     tabMenuSurface.fill([169,169,169])
     height = 0
     width = 0
     nameWidthSurf = nameFont.render("WWWWWWWWWWWWWWWW", 1, [0,0,0])
     headerWidths = []
+    
     for head in headers:
         surf = nameFont.render(head, 1, [255,255,255])
         if(head == "NAME"):
@@ -161,11 +158,10 @@ def tabMenu(players):
 
 toQuit = False
 
-#TODO Fix closing
 
-print("Connected", connected)
+
+print("Connected:", connected)
 while connected:
-    print("RUNNING")
     for event in pygame.event.get():
         if(event.type == pygame.KEYDOWN):
             if(event.key == pygame.K_ESCAPE):
@@ -177,10 +173,10 @@ while connected:
         data = pickle.loads(data)
     except:
         continue
-    
-    iteration += 1
+
     
     players, terrain, ID, msgs = data
+    #Copy messages locally
     if(not msgs == []):
         print(msgs)
     if(len(msgs) > 0):
@@ -192,15 +188,18 @@ while connected:
     mouseX = localPlayer.x+(pos[0]-WIDTH/2)
     mouseY = localPlayer.y+(pos[1]-HEIGHT/2)
     screen.fill([255,255,255])
-    # hitmarkers
+    
+    #Hitmarkers
     if(localPlayer.hitMarkers > 0):
         map.blit(hitmarkers, (localPlayer.x-hitmarkers.get_width()/2, localPlayer.y-hitmarkers.get_height()/2))
         localPlayer.hitMarkers -= 1
         
+    #Draw players and bots +bullets
     for player in players:
         player.draw(map)
         for bullet in player.bullets:
             bullet.draw(map)
+        #Show nametags on all non local player tanks if showNames is toggled
         if(showNames and not player == localPlayer):
             surf = nameFont.render(str(player.name), 1, player.colour)
             map.blit(surf, (player.x-surf.get_width()/2, player.y-surf.get_height()/2-15))
@@ -208,6 +207,7 @@ while connected:
             if(player.health > 0):
                 pygame.draw.rect(map, [0,255,0], [player.x-50, player.y-5, player.health/10,10], 0)
             
+        #Draw nametag if hover over tank
         else:
             if(abs(mouseX-player.x) < 37 and abs(mouseY-player.y) < 37):
                 surf = nameFont.render(str(player.name), 1, player.colour)
@@ -215,6 +215,8 @@ while connected:
                 pygame.draw.rect(map, [255,0,0], [mouseX-50, mouseY-5, 100,10], 0)
                 if(player.health > 0):
                     pygame.draw.rect(map, [0,255,0], [mouseX-50, mouseY-5, player.health/10,10], 0)
+    
+    #Draw terrain and supply drops
     for t in terrain:
         if(type(t) == Supply):
             if(localPlayer not in t.hasSupplied):
@@ -224,7 +226,9 @@ while connected:
     
     
     print("DRAWING")
+    #Draw the map to the screen
     screen.blit(map, (-localPlayer.x+WIDTH/2, -localPlayer.y+HEIGHT/2))
+    #Prep the minimap
     pygame.draw.rect(map, [255,255,255], (localPlayer.x-WIDTH/2, localPlayer.y-HEIGHT/2, WIDTH, HEIGHT), 25)
     for player in players:
         pygame.draw.circle(map, player.colour, (int(player.x), int(player.y)), 35, 0)
@@ -252,12 +256,14 @@ while connected:
             pygame.draw.rect(map, [0,0,0], [t.x-50, t.y-50, 100, 100], 0)
             pass
     
+    #Draw ammo count
     ammo = menuFont.render(str(localPlayer.clip)+"/"+str(localPlayer.ammo)+"/"+str(localPlayer.fireMode+1), 1, [255,255,255], [0,0,0])
     ammox = 10
     ammoy = HEIGHT-ammo.get_height()-50
     screen.blit(ammo, (ammox, ammoy))
     
     
+    #Animate reloading circle
     if(localPlayer.reloadTimer > 0):
         arcx = ammox-8
         arcy = ammoy+ammo.get_rect()[3]/2-(ammo.get_rect()[2]-10)/2
@@ -265,9 +271,10 @@ while connected:
         arcw = ammo.get_rect()[2]+10
         pygame.draw.arc(screen, [255,255,255], [arcx, arcy, arcw, arch], 0, math.radians(360-(localPlayer.reloadTimer*3)), 3)
     
-    
+    #Draw tab menu
     if(tabMenuOn):
         tabMenu(players)
+        
     
     if(localPlayer.dead):
         surf = menuFont.render("You Died!", 1, localPlayer.colour)
@@ -276,7 +283,8 @@ while connected:
         screen.blit(surf, (WIDTH/2-surf.get_width()/2, HEIGHT/2-surf.get_height()*1.5))
         surf = menuFont.render("Press ESCAPE to quit", 1, localPlayer.colour)
         screen.blit(surf, (WIDTH/2-surf.get_width()/2, HEIGHT/2+surf.get_height()*1.5))
-       
+    
+    #Draw messages
     msgY = HEIGHT
     for message in messages:
         message[2] -= 1;
@@ -290,6 +298,7 @@ while connected:
     
     pygame.display.flip()
 
+#Exit code
 print("NOTHING")
 sock.close()
 print("Socket")
