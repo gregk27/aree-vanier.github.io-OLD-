@@ -12,8 +12,8 @@ args = sys.argv
 print(args)
 
 map = pygame.Surface((5000, 5000))   #@ReservedAssignment
-nameFont = pygame.font.Font("data-latin.ttf", 25)
-menuFont = pygame.font.Font("data-latin.ttf", 50)
+nameFont = pygame.font.Font("Resources/data-latin.ttf", 25)
+menuFont = pygame.font.Font("Resources/data-latin.ttf", 50)
 connected = False
 
 
