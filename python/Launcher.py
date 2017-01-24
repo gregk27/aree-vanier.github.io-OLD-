@@ -1,18 +1,9 @@
-# VERSION 1.6
+# VERSION 2.5
 
-import colorsys
-from distutils.command import install
-import os
-import pickle
-import random
-import socket
-import subprocess
-import threading
-import time
+import colorsys, os, pickle, random, socket, subprocess, threading, time, pygame  # @UnusedImport
 from urllib.request import urlopen, urlretrieve
 
-import pygame
-from pygame.surface import Surface
+
 
 
 pygame.init()
@@ -25,8 +16,10 @@ running = True
 
 
 # TODO: fix hitmarkers, add objectives, show weapon bettter, powerups?, redo project structure, add mini-launcher, change thread exit code, add sound
-# TODO: fix bot rotation, supply drop speed, fix lag, fix view 2 button
+# TODO: fix bot rotation, supply drop speed, fix lag, fix options button
 
+
+# Thread that runs the client
 class ClientThread(threading.Thread):
     def __init__(self, port, host, name, colour):
         super(ClientThread, self).__init__()
@@ -40,12 +33,15 @@ class ClientThread(threading.Thread):
     def run(self):
         self.running = True
         print("Started")
+        #Start client with args for host, port, usename and colour
         args = self.host+" "+str(self.port)+" "+self.name.replace(" ", "_")+" "+str(self.colour[0])+" "+str(self.colour[1])+" "+str(self.colour[2])
         subprocess.call("C:\Python33\python.exe Client.py "+args)
         print("DONE CLIENT")
         self.toKill = True
 
-        
+    
+    
+# Thread that runs the server
 class ServerThread(threading.Thread):
     def __init__(self, port, bots):
         super(ServerThread, self).__init__()
@@ -57,20 +53,13 @@ class ServerThread(threading.Thread):
     def run(self):
         self.running = True
         print("Started")
+        #Starts server with args for port and nuber of bots
         subprocess.call("C:\Python33\python.exe Server.py "+str(self.port)+" "+str(self.bots))
         print("DONE")
         self.toKill = True
 
 
-# Old colour code
-# hue = 300
-# while hue > 255:
-#     hue = float(input("Enter hue: "))
-# colour = colorsys.hsv_to_rgb(hue/255, 1, 1)
-
-
-
-
+# Class that stores saved server data
 class Server:
     def __init__(self, name, host, port):
         self.name = name
@@ -96,7 +85,6 @@ class Server:
         subTitle = subtitleFont.render(self.host+":"+str(self.port), 1 ,[255,255,255])
         self.surf.blit(title, (20,20))
         self.surf.blit(subTitle, (20,75))
-        self.rect = pygame.rect.Rect(self.x, self.y, self.surf.get_width(), self.surf.get_height())
         self.rect = pygame.rect.Rect(self.x, self.y, self.surf.get_width(), self.surf.get_height())
 
 
@@ -234,6 +222,7 @@ class VersionCheck(threading.Thread):
         
         
         #data format: SERVER|LABEL|HOST|PORT
+        #             or TAG|VALUE
         servers = [Server("Local Machine", socket.gethostname(), 1111)]
         data = ["Name","0"]
         try:
@@ -255,10 +244,13 @@ class VersionCheck(threading.Thread):
 
 vc = VersionCheck()
 vc.start()
+
 try:
     font = pygame.font.Font("data-latin.ttf", 30)
 except:
     font = pygame.font.SysFont("Arial", 30)
+    
+# Show version check progress
 while True:
     screen.fill([0,0,0])
     for event in pygame.event.get():
@@ -268,19 +260,27 @@ while True:
     outSurf = font.render(out, 1, [255,255,255])
     screen.blit(outSurf, (screen.get_width()/2-outSurf.get_width()/2, screen.get_height()/2-outSurf.get_height()/2))
     pygame.display.flip()
+    # Stop the thread
     if(vc.completed == vc.total):
         vc.join(1)
         break;
 
+
+# Text input field
+
 class TextField:
-    def __init__(self, x, y, default, type, limit, label):
+    
+    def __init__(self, x, y, default, type, limit, label):  # @ReservedAssignment
         self.label = label
         self.x = x
         self.y = y
         self.text = default
+        #Type: 0 for alphanumeric, 1 for numbers only
         self.type = type
         self.limit = limit
         self.font = pygame.font.Font("data-latin.ttf", 25)
+        
+        # Size for biggest possible entry
         self.sizeTest = self.font.render("W"*limit, 1, [0,0,0])
         self.labelSurf = self.font.render(self.label, 1, [255,255,255])
         self.width = self.sizeTest.get_width()+10+self.labelSurf.get_width()+10
@@ -290,16 +290,21 @@ class TextField:
         self.surface = pygame.Surface((self.width, self.height))
         
     def draw(self, surface):
-        self.text.replace("|", "")
         self.surface.fill([0,0,0])
         pygame.draw.rect(self.surface, [132,132,132], [self.labelSurf.get_width()+5,0, 1000, 100], 0)
         removeLine = False
+        
+        # Draw in '|' if it's focused
         if(self.focused and len(self.text) < self.limit):
             self.text += "|"
             removeLine = True
+            
         textSurf = self.font.render(self.text, 1, [255,255,255])
+        
+        # Delete all '|' characters
         if(removeLine):
-            self.text = self.text[0:len(self.text)-1]
+            self.text.replace("|", "")
+            
         self.surface.blit(self.labelSurf, (5,5))
         self.surface.blit(textSurf, [self.labelSurf.get_width()+10,5])
         surface.blit(self.surface, (self.x, self.y))
@@ -327,15 +332,17 @@ class Button:
 
 
 
+# Initiate text fields
 focusedField = None
 fields1 =[TextField(10,10,"Server", 0, 30, "Name:"),TextField(10,60,"", 0, 30, "Hostname:"),TextField(10,110,"1111",1,4, "Port:")]
 fields2 =[TextField(10,10,data[0],0,16, "Username:"),TextField(10,60,data[1],1,3,"Hue:")]
 fields3 =[TextField(10,10,"1111",1,4,"Port:"), TextField(10,60,"0",1,2, "Bots:")]
 
+#Initiate text fields
 launchServerButton = Button(10, 110, "Launch Server",0 )
 addServerButton = Button(0,0, "Add Server", 0)
 confirmAddServerButton = Button(10, 160, "Add Server", 0)
-view2ConfirmButton = Button(10, 110, "Confirm", 0)
+view2ConfirmButton = Button(10, 160, "Confirm", 0)
 view2Button = Button(0,100,"Options",0 )
 cancelButton = Button(10, 210, "Cancel",0)
 hostServerButton = Button(0,680,"Host Server",0)
@@ -347,6 +354,7 @@ deleteServerButton = Button(0,50,"Delete Server", 20)
 pageUpButton = Button(825,screen.get_height()/3-50, "Page Up",0)
 pageDownButton = Button(825,screen.get_height()/3+10, "Page Down",0)
 
+#Instatiate client and sever threads without running
 ct = ClientThread(1111, "KCV-INLABA03FE2", "NAME", 1)
 st = ServerThread(1111, 0)
 
@@ -355,23 +363,37 @@ subtitleFont = pygame.font.Font("data-latin.ttf", 18)
 
 
 
-
+#Page of server list to display
 page = 0
 
+#Default select local machine
 selectedServer = servers[0]
 selectedServer.selected = True
 
+view = 0
+
 serverSurf = pygame.Surface((640,480))
+#Draw server list
 def drawServers():
     global servers, page
     serverSurf.fill((105,105,105))
     for server in servers[page:page+4]:
-        print(servers.index(server),"\t",servers[page:page+4].index(server))
         server.update(160, 120*servers[page:page+4].index(server)+80)
         serverSurf.blit(server.surf, (0,120*servers[page:page+4].index(server)))
         
     
     screen.blit(serverSurf, (160, 80))
+ 
+def view0():
+    drawServers()
+    addServerButton.draw(screen)
+    view2Button.draw(screen)
+    playButton.draw(screen)
+    hostServerButton.draw(screen)
+    deleteServerButton.draw(screen)
+    if(len(servers) > 4):
+        pageUpButton.draw(screen)
+        pageDownButton.draw(screen)
 
 def view1():
     for field in fields1:
@@ -397,21 +419,9 @@ def view3():
     launchServerButton.draw(screen)
     cancelButton.draw(screen)
 
-# Starting Code:
-##print("CT+ST")
-##                st.port = int(fields[1].text)
-##                st.start()
-##                time.sleep(2.5)
-#                 ct.host = fields[0].text
-#                 ct.port = int(fields[1].text)
-#                 ct.name = fields[2].text
-#                 ct.colour = colorsys.hsv_to_rgb(int(fields[3].text)/255, 1, 1)
-#                 ct.colour = [int(ct.colour[0]*255), int(ct.colour[1]*255), int(ct.colour[2]*255)]
-#                 ct.start()
-
 
 ## View 0 is main, view 1 is add server, view 2 is change name/colour, view 3 is to lauch a server
-view = 0
+
 
 
 
@@ -419,10 +429,12 @@ while running:
     for event in pygame.event.get():
         if(event.type == pygame.QUIT):
             running = False
+            
         if(event.type == pygame.KEYUP and not focusedField == None):
             if(event.key == pygame.K_BACKSPACE):
                 focusedField.text = focusedField.text[0:len(focusedField.text)-1]
             else:
+                # Add to text fields
                 if(not focusedField == None and not (event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT) and len(focusedField.text) < focusedField.limit):
                     if(event.key == pygame.K_SPACE and focusedField.type == 0):
                         focusedField.text+=" "
@@ -432,50 +444,64 @@ while running:
                                 focusedField.text += pygame.key.name(event.key)
                         else:
                             focusedField.text += pygame.key.name(event.key)
+                            
+                            
+                            
         if(event.type == pygame.MOUSEBUTTONUP):
             pos = pygame.mouse.get_pos()
             if(view == 0):
                 if(addServerButton.rect.collidepoint(pos)):
                     view = 1
                     focusedField = None
+                    
                 if(view2Button.rect.collidepoint(pos)):
                     view = 2
                     focusedField = None
+                    
                 if(hostServerButton.rect.collidepoint(pos)):
                     view = 3
                     focusedField = None
+                    
                 if(deleteServerButton.rect.collidepoint(pos)):
                     if(not selectedServer == servers[0]):
                         servers.remove(selectedServer)
                         pos = servers[0].x+10, servers[0].y+10
+                        
                 if(playButton.rect.collidepoint(pos)):
+                    #Start client
                     ct.host = selectedServer.host
                     ct.port = int(selectedServer.port)
                     ct.name = fields2[0].text
+                    #If colour selection is blank, randomise it
                     if(fields2[1].text == ""):
                         fields2[1].text = random.randint(0,255)
+                    #Generate colour
                     ct.colour = colorsys.hsv_to_rgb(int(fields2[1].text)/255, 1, 1)
                     ct.colour = [int(ct.colour[0]*255), int(ct.colour[1]*255), int(ct.colour[2]*255)]
                     ct.start()
+                    
                 for server in servers[page:page+4]:
                     if(server.rect.collidepoint(pos)):
-                        print("server: "+str(servers.index(server)))
                         server.selected = True
                         selectedServer.selected = False
                         selectedServer = server
-                        
+                
+                #Scroll through servers        
                 if(len(servers) > 4):
                     if(pageUpButton.rect.collidepoint(pos)):
                         page -= 1
                         if(page < 0):
                             page =0
+                            
                     if(pageDownButton.rect.collidepoint(pos)):
                         page += 1
                         if(page+3 > len(servers)):
                             page -=1
+                            
                 else:
                     page = 0
-                    
+            
+                  
             if(view == 1):
                 for field in fields1:
                     if(field.rect.collidepoint(pos)):
@@ -488,6 +514,8 @@ while running:
                     view = 0
                     focusedField = None
                     fields1 =[TextField(10,10,"Server", 0, 30, "Name:"),TextField(10,60,"", 0, 30, "Hostname:"),TextField(10,110,"1111",1,4, "Port:")]
+                    
+                    
             if(view == 2):
                 for field in fields2:
                     if(field.rect.collidepoint(pos)):
@@ -498,6 +526,8 @@ while running:
                 if(view2ConfirmButton.rect.collidepoint(pos)):
                     view = 0
                     focusedField = None
+                    
+                    
             if(view == 3):
                 for field in fields3:
                     if(field.rect.collidepoint(pos)):
@@ -506,6 +536,7 @@ while running:
                         field.focused = True
                         focusedField = field
                 if(launchServerButton.rect.collidepoint(pos)):
+                    #Start server
                     if(fields3[0].text == ""):
                         fields3[0].text = "1111"
                     if(fields3[1].text == ""):
@@ -515,6 +546,8 @@ while running:
                     st.start()
                     view = 0
                     focusedField = None
+                    
+                    
             if(not view == 0 or not view == 2):
                 if(cancelButton.rect.collidepoint(pos)):
                     view = 0
@@ -529,15 +562,7 @@ while running:
 
     
     if(view == 0):
-        drawServers()
-        addServerButton.draw(screen)
-        view2Button.draw(screen)
-        playButton.draw(screen)
-        hostServerButton.draw(screen)
-        deleteServerButton.draw(screen)
-        if(len(servers) > 4):
-            pageUpButton.draw(screen)
-            pageDownButton.draw(screen)
+        view0()
     if(view == 1):
         view1()
     if(view == 2):
@@ -552,11 +577,12 @@ while running:
     
     
     
-    
+    # Reset thread classes
     if(ct.toKill): ct = ClientThread(1111, "KCV-INLABA03FE2", "Name", 1)
     if(st.toKill): st = ServerThread(1111, 0)
                 
 
+#Save server list, usename and colour
 saveFile = open("launcher.cfg", 'w')
 for server in servers:
     if(not server == servers[0]):
@@ -566,6 +592,8 @@ for server in servers:
         outString+=str(server.port)+"|"
         saveFile.write(outString+"\n")
 saveFile.write("NAME|"+fields2[0].text+"|\n")
+if(fields2[1].text == ""):
+    fields2[1].text = "0"
 saveFile.write("HUE|"+fields2[1].text+"|\n")
 saveFile.close()
 pygame.quit()
