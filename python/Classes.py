@@ -1,12 +1,11 @@
-# VERSION 2.2
+# VERSION 2.5
 
-import math
-import random
+import math, random
 
 import pygame
 from colorsys import hsv_to_rgb
 
-
+#setup map size
 mapSize = 0
 def init(mapS):
     global mapSize
@@ -17,6 +16,7 @@ screen = None
 
 FRICTION = 0.05
 
+#Basic entity class, extended by tank
 class Entity:
     def __init__(self, x, y, shape, colour):
         self.x = x
@@ -73,6 +73,7 @@ class Tank(Entity):
         self.maxClip = 25
         self.ammo = ammo-self.maxClip
         self.clip = 25
+        
         self.dead = False
         self.deaths = 0
         self.kills = 0
@@ -100,6 +101,7 @@ class Tank(Entity):
     def move(self):
         self.cooldown -= 1
         self.reloadTimer -= 1
+        
         if(self.reloadTimer == 1):
             if(self.ammo > self.maxClip):
                 self.ammo -= self.maxClip-self.clip
@@ -110,27 +112,31 @@ class Tank(Entity):
         Entity.move(self)
         
     def shoot(self):
-#         print(self.fireMode, self.cooldown, self.clip, self.reloadTimer)
         if(self.cooldown < 1 and self.clip > 0 and self.reloadTimer < 0):
             self.clip -= 1
+            #Shoot basic bullet, med. damage and med. cooldown
             if(self.fireMode == 0):
                 self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
                 self.cooldown = 50
+            #Shoot machine gun, low damage and short cooldown
             elif(self.fireMode == 1):
                 self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 3, self.colour, self.gunAngle+random.randint(0,10)-5, 25))
                 self.cooldown = 20
+            #Shoot sniper, high damage and long cooldown
             elif(self.fireMode == 2):
                 self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 6, self.colour, self.gunAngle+random.randint(0,10)-5, 500))
                 self.cooldown = 200
+            #Shoot shotgun, shoots up to 5 basic bullets at once, with slightly reduced cooldowns
             elif(self.fireMode == 3):
                 self.clip += 1
                 self.cooldown = 0
-                for i in range(0,5):
+                for i in range(0,5):  # @UnusedVariable
                     if(self.clip > 0):
                         self.bullets.append(Bullet(self.x+27*math.cos(self.gunAngle*math.pi/180), self.y+27*math.sin(self.gunAngle*math.pi/180), 2, self.colour, self.gunAngle+random.randint(0,10)-5, 100))
                         self.clip -= 1   
                         self.cooldown += 30
-                print(self.cooldown)
+
+    #Erase the tank by drawing over the lines with black     
     def erase(self, surface):
         temp = self.colour
         self.colour = [0,0,0]
@@ -150,44 +156,42 @@ class Tank(Entity):
         if(self.reloadTimer < 0):
             self.reloadTimer = 120
             
-        
+   
 class Bot(Tank):
     def __init__(self, x, y, shape, colour, name, ammo):
         self.target=0
         super().__init__(x, y, shape, colour, name, ammo)
         
     def move(self, targets, speed):
+        #Default target center of map
         targeting = True
         targetX = 2500
         targetY = 2500
+        
         while targeting:
-#             print(len(targets))
+            #If self is only target, stop
             if(len(targets) < 2):
                 targeting = False
-#             print("targeting")
             try:
-#                 print(targets[self.target] == self)
+                #Check if targeting self or if target is dead
                 if(not targets[self.target] == self and not targets[self.target].dead):
-#                     print("NOT BAD")
                     targetX = targets[self.target].x
                     targetY = targets[self.target].y
                     targeting = False
                 else:
-#                     print("CHANGE")
                     self.target=random.randint(0,len(targets))
             except:
                 ("BUG")
                 self.target=random.randint(0,len(targets))
         
-#         print("NOT")
-        if(abs(self.x-targetX) < 50 or abs(self.y-targetY) < 50):
-            pass
-        else:
+        #Don't get closer than 50 pixels
+        if(abs(self.x-targetX) > 50 or abs(self.y-targetY) > 50):
             self.propel(speed)
             targetAngle = math.atan2(targetY-self.y, targetX-self.x)*180/math.pi
             self.gunAngle = targetAngle
             self.angle = targetAngle
-            
+        
+        # Shoot if within 200 pixels
         if(abs(self.x-targetX) < 200 or abs(self.y-targetY) < 200):
             self.shoot()  
             if(self.clip < 5):
