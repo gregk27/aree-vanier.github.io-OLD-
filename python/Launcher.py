@@ -101,7 +101,7 @@ class VersionCheck(threading.Thread):
     def __init__(self):
         super(VersionCheck, self).__init__()
         self.completed = 0
-        self.total = 13
+        self.total = 12
     def run(self):
         global servers, data
         try:
