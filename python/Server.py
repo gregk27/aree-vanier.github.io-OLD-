@@ -1,21 +1,12 @@
-# VERSION 2.0
+# VERSION 2.5
 
-import random
-import time
+import random, time, pygame, sys, socket, threading, gregJoy, pointInsidePolygon, pickle  # @UnusedImport
 
-import pygame, sys, math, socket, threading
+from Classes import *  # @UnusedWildImport
 
-from Classes import *
-import gregJoy
-import pointInsidePolygon
-import pickle, traceback
 
-## Fix drifting
 ## Change spawns - distance from location
 ## Change rotation controls
-## reload delays
-## range limitations
-
 args = sys.argv
 
 
@@ -38,7 +29,7 @@ mapSize = 5000
 
 
 
-
+#Initiate socket
 sock = socket.socket()
 port = int(args[1])
 host = socket.gethostname()
@@ -47,10 +38,7 @@ print("Server hosted on:", host+":"+str(port))
 
 
 
-# players = [Tank(100,100,tankShape,[255,255,255], "PLAYER")]
-# bots = [Bot(1000,1000,tankShape, [255,0,0], "BOT"),Bot(2500,2500,tankShape, [255,0,0], "BOT"),Bot(4500,4500,tankShape, [255,0,0], "BOT")]
-
-
+#Create bots
 names = ["mybot.ca", "Another bot", "Dat Bot Doe", "Bot05"]
 bots = []
 
@@ -63,6 +51,9 @@ players = []
 clients = []
 msgs = []
 
+DEADZONE = 0.25
+
+#Thread created for each client, handles all communications
 class Client(threading.Thread):
     def __init__(self, client):
         super(Client, self).__init__()
@@ -78,10 +69,8 @@ class Client(threading.Thread):
             oldTime = currentTime
             currentTime = time.time()
             deltaTime = currentTime - oldTime + 0.0001
-#             print(deltaTime)
             try:
                 data = pickle.loads(self.client.recv(2048))
-#                 print(data)
                 player = players[clients.index(self)] 
                 keys = data[0]
                 joy = data[1]
@@ -120,15 +109,17 @@ class Client(threading.Thread):
                             player.fireMode = 0
             except:
                 pass
-#             print(deltaTime)
                     
     def send(self, data):
         global msgs
+        #Kick after failed connection
         if(self.fails >= 2):
             msgs.append(["SERVER: "+players[clients.index(self)].name+" disconnected", players[clients.index(self)].colour])
             players.pop(clients.index(self))
             clients.remove(self)
             print("CLIENT REMOVED")
+        
+        #Try to send data
         try:
             sendout = pickle.dumps(data)
             self.client.sendall(sendout)
@@ -138,6 +129,7 @@ class Client(threading.Thread):
             self.fails += 1
 
 
+#Thread that is always running to check for new client connections
 class NewClient(threading.Thread):
     def __init__(self):
         super(NewClient, self).__init__()
@@ -165,12 +157,14 @@ class NewClient(threading.Thread):
 newClient = NewClient()
 newClient.start()
 
-DEADZONE = 0.25
-
+#initializes classes
 init(mapSize)
+
+
 running = True
 currentTime = time.time()
 
+#Creates shapes for terrain
 terrainShapes = [
     [[0,0],[10,0],[10,36],[46,36],[46,46],[0,46]],
     [[0,0],[36,36],[0,36]],
@@ -178,6 +172,7 @@ terrainShapes = [
     [[0,0],[72,0],[72,10],[0,10]]
     ]
 
+#Generates terrain: random x, y, rotation, and size
 terrain = []
 terrainShape = []
 for i in range(random.randint(15,17)):
@@ -187,23 +182,25 @@ for i in range(random.randint(15,17)):
     terrain.append(t)
 print(len(terrain))
 
+#Initiates supply drops
 supplies = []
 lastDrop = time.time()
-print(lastDrop)
+
+
 
 while running:
-    
-    
+    #Calculate delta time
     oldTime = currentTime
     currentTime = time.time()
     deltaTime = currentTime - oldTime
+    
+    #Move bots
     if(len(players) > 0):
         for bot in bots:
             if(bot.dead):
                 bot.revive(len(players))
             else:
-                if(len(players)>0):
-                    bot.move(players+bots, 0.060)
+                bot.move(players+bots, 0.060)
                 if(bot.health < 0):
                     bot.dead = True   
             
@@ -212,6 +209,8 @@ while running:
                     bullet.move()
                 else:
                     bot.bullets.remove(bullet)
+                    
+    #Move players
     for player in players:
         if(not player.dead):
             player.move()
@@ -224,31 +223,40 @@ while running:
             else:
                 player.bullets.remove(bullet)
     
+    #Create supply drop every minute
     if(time.time() - lastDrop >= 60):
         supplies.append(Supply(random.randint(0,4900),random.randint(0,4900), 2500))
         lastDrop = time.time()
         msgs.append(["SERVER: SUPPLY DROP", [255,255,255]])
     
+    #Update supply drop
     for s in supplies:
         s.update()
         if(s.life == 0):
             supplies.remove(s)
 
     
-
+    #Collision detection
     for i in players+bots:
         iShape =  i.getShape(i.hitbox, i.angle)
+        
         for p in iShape: 
+            
+            #Against terrain
             for t in terrainShapes:
                 if(abs(i.x-t[0][0]) < 500 and abs(i.y-t[0][1]) < 500):
                     if(pointInsidePolygon.check(p[0], p[1], t)):
                         i.x = i.oldX
                         i.y = i.oldY
+                        
+            #Against supplies
             for s in supplies:
                 if(abs(i.x-s.x) < 50 and abs(i.y-s.y) < 50):
                     if(pointInsidePolygon.check(p[0], p[1], s.getShape())):
                         i = s.resupply(i)
+        
         for e in players+bots:
+            #Againts bullets
             for bullet in e.bullets:
                 if(abs(i.x-bullet.x) < 75 and abs(i.y-bullet.y) < 75):
                     if(pointInsidePolygon.check(bullet.x, bullet.y, iShape) and i.health > -1):
@@ -263,13 +271,15 @@ while running:
                                 e.score += 500
                                 msgs.append(["KILL: "+e.name+" | "+str(e.fireMode)+" | "+i.name, e.colour])
                             if(bullet in e.bullets):
-                                e.bullets.remove(bullet)         
+                                e.bullets.remove(bullet)  
+                #Check bullet against terrain (done here to reduce amount of loops)
                 for t in terrainShapes:
                     if(abs(bullet.x-t[0][0]) < 300 and abs(bullet.y-t[0][1]) < 300):
                         if(pointInsidePolygon.check(bullet.x, bullet.y, t)):
                             if(bullet in e.bullets):
                                 e.bullets.remove(bullet)
-                                
+    
+    #Send data to clients            
     for client in clients:
         client.send([players+bots, terrain+supplies, clients.index(client), msgs])
         if(not msgs == []):
