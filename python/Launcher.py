@@ -241,8 +241,6 @@ class VersionCheck(threading.Thread):
             print("No Icon")
             urlretrieve("https://aree-vanier.github.io/Icon.png", "Resources/res/icon.png")
             print("Downloaded")
-            pygame.display.set_icon(pygame.image.load("Resources/res/icon.png"))
-            print("set")
         
         self.completed += 1
         
