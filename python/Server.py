@@ -89,6 +89,8 @@ class Client(threading.Thread):
                 if(keys[pygame.K_2]): player.fireMode = 1
                 if(keys[pygame.K_3]): player.fireMode = 2
                 if(keys[pygame.K_4]): player.fireMode = 3
+                if(keys[pygame.K_END] and player.health > 900 and player.ammo > player.maxAmmo-player.maxClip-10):  
+                    player.revive(random.randint(100, 4900),random.randint(100, 4900))
                         
                 if(not joy == None):
                     if(joy[gregJoy.AXIS_PITCH] > DEADZONE): player.propel(-0.75*gregJoy.AXIS_PITCH*10*deltaTime)
