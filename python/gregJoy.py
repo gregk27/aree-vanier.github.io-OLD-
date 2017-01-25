@@ -79,5 +79,5 @@ def check(joystick):
     toReturn.append(joystick.get_axis(1))
     toReturn.append(joystick.get_axis(2))
     for i in range(0,11):
-      toReturn.append(joystick.get_button(i))
+        toReturn.append(joystick.get_button(i))
     return(toReturn)
