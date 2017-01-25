@@ -109,8 +109,8 @@ class Client(threading.Thread):
                         player.reload()
                     if(joy[gregJoy.BUTTON_6]): player.fireMode = 0
                     if(joy[gregJoy.BUTTON_7]): player.fireMode = 1
-                    if(joy[gregJoy.BUTTON_8]): player.fireMode = 2
-                    if(joy[gregJoy.BUTTON_9]): player.fireMode = 3
+                    if(joy[gregJoy.BUTTON_10]): player.fireMode = 2
+                    if(joy[gregJoy.BUTTON_11]): player.fireMode = 3
                     if(joy[gregJoy.BUTTON_2] and player.health > 900 and player.ammo > player.maxAmmo-player.maxClip-10 and self.teleportDelay < 0): 
                         player.deaths += 1
                         player.revive(random.randint(100, 4900),random.randint(100, 4900))
