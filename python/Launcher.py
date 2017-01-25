@@ -8,14 +8,14 @@ from urllib.request import urlopen, urlretrieve
 
 pygame.init()
 
+if(os.path.exists("Resources/res/icon.png")):
+    pygame.display.set_icon(pygame.image.load("Resources/res/icon.png"))
 screen = pygame.display.set_mode([int(960),int(720)])
 pygame.key.set_repeat(50,50)
 pygame.display.set_caption("Launcher")
 
 running = True
 
-if(os.path.exists("Resources/res/icon.png")):
-    pygame.display.set_icon(pygame.image.load("Resources/res/icon.png"))
 
 # TODO: fix hitmarkers, add objectives, show weapon bettter, powerups?, redo project structure, add mini-launcher, change thread exit code, add sound
 # TODO: fix bot rotation, supply drop speed, fix lag, fix options button
