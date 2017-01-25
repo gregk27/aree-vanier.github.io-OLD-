@@ -6,7 +6,6 @@ from Classes import *  # @UnusedWildImport
 
 
 ## Change spawns - distance from location
-## Change rotation controls
 args = sys.argv
 
 
@@ -89,7 +88,8 @@ class Client(threading.Thread):
                 if(keys[pygame.K_2]): player.fireMode = 1
                 if(keys[pygame.K_3]): player.fireMode = 2
                 if(keys[pygame.K_4]): player.fireMode = 3
-                if(keys[pygame.K_END] and player.health > 900 and player.ammo > player.maxAmmo-player.maxClip-10):  
+                if(keys[pygame.K_END] and player.health > 900 and player.ammo > player.maxAmmo-player.maxClip-10): 
+                    player.deaths += 1
                     player.revive(random.randint(100, 4900),random.randint(100, 4900))
                         
                 if(not joy == None):
