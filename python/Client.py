@@ -1,4 +1,4 @@
-# VERSION 3
+# VERSION 3.1
 import pickle, sys, threading, pygame, socket, gregJoy #@UnusedImports
 
 from Classes import *  # @UnusedWildImport
