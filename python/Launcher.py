@@ -1,21 +1,20 @@
-# VERSION 2.6
+# VERSION 3
 
 import colorsys, os, pickle, random, socket, subprocess, threading, time, pygame  # @UnusedImport
 from urllib.request import urlopen, urlretrieve
 
 
 
-
 pygame.init()
 
-if(os.path.exists("Resources/res/icon.png")):
-    pygame.display.set_icon(pygame.image.load("Resources/res/icon.png"))
 screen = pygame.display.set_mode([int(960),int(720)])
 pygame.key.set_repeat(50,50)
 pygame.display.set_caption("Launcher")
 
 running = True
 
+if(os.path.exists("Resources/res/icon.png")):
+    pygame.display.set_icon(pygame.image.load("Resources/res/icon.png"))
 
 # TODO: fix hitmarkers, add objectives, show weapon bettter, powerups?, redo project structure, add mini-launcher, change thread exit code, add sound
 # TODO: fix bot rotation, supply drop speed, fix lag, fix options button
@@ -116,7 +115,6 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
-        
         try:
             server = open("Resources/Server.py")
             serverVersion = server.readline()
@@ -128,7 +126,6 @@ class VersionCheck(threading.Thread):
             serverVersion = 0.0
         
         self.completed += 1
-        
         
         try:
             classes = open("Resources/Classes.py")
@@ -157,7 +154,6 @@ class VersionCheck(threading.Thread):
         
         webClient.close()
         
-        
         self.completed += 1
         
         webServer = urlopen("https://aree-vanier.github.io/python/Server.py")
@@ -172,7 +168,6 @@ class VersionCheck(threading.Thread):
             server.close()
         
         webServer.close()
-        
         
         self.completed += 1
         
@@ -190,7 +185,6 @@ class VersionCheck(threading.Thread):
         webClasses.close()
         
         self.completed += 1
-        
                 
         print(webClientVersion, webServerVersion, webClassesVersion)
         
@@ -204,6 +198,14 @@ class VersionCheck(threading.Thread):
             
         self.completed += 1
         
+        if(not os.path.exists("Resources/gregJoy.py")):
+            gj = open("Resources/gregJoy.py", "w")
+            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
+            gj.write(webgj.read().decode())
+            webgj.close()
+            gj.close()
+        
+        self.completed += 1
         
         if(not os.path.exists("Resources/gregJoy.py")):
             gj = open("Resources/gregJoy.py", "w")
@@ -214,12 +216,10 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
-        
         if not os.path.exists("Resources/res"):
             os.makedirs("Resources/res")
         
         self.completed += 1
-        
         
         if(not os.path.exists("Resources/res/data-latin.ttf")):
             urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "Resources/res/data-latin.ttf")
@@ -228,9 +228,9 @@ class VersionCheck(threading.Thread):
         
         if(not os.path.exists("Resources/res/icon.png")):
             urlretrieve("https://aree-vanier.github.io/Icon.png", "Resources/res/icon.png")
+            pygame.display.set_icon(pygame.image.load("Resources/res/icon.png"))
         
         self.completed += 1
-        
         
         
         #data format: SERVER|LABEL|HOST|PORT
@@ -252,7 +252,6 @@ class VersionCheck(threading.Thread):
         except:
             servers.append(Server("Greg", "KCV-INLABA03FE2", 1111))
         self.completed += 1
-        
         
 
 vc = VersionCheck()
