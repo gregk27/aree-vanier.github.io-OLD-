@@ -7,7 +7,7 @@ parent = os.path.abspath(os.path.join("Tanks.py",os.pardir)).split("\\").pop()
 firstRun = False
 
 
-if not parent == "Resources":
+if not os.path.exists("Resources"):
     firstRun = True
     os.makedirs("Resources")
     tanks = open("Tanks.bat", 'w')
