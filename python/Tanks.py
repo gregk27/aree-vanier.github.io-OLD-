@@ -13,7 +13,7 @@ if not os.path.exists("Resources"):
     tanks = open("Tanks.bat", 'w')
     contents = """C:\Python33\python.exe Tanks.py"""
     tanks.write(contents)
-    tanks.close
+    tanks.close()
     
 try:
     launcher=open("Resources/Launcher.py")
