@@ -1,4 +1,4 @@
-# VERSION 3.2
+# VERSION 3.5
 
 import random, time, pygame, sys, socket, threading, gregJoy, pointInsidePolygon, pickle  # @UnusedImport
 
@@ -59,6 +59,7 @@ class Client(threading.Thread):
         self.client = client
         self.fails = 0
         self.fireModeDelay = 0
+        self.teleportDelay = 0
         
     
     def run(self):
@@ -69,6 +70,7 @@ class Client(threading.Thread):
             currentTime = time.time()
             deltaTime = currentTime - oldTime + 0.0001
             try:
+                self.teleportDelay -= 1
                 data = pickle.loads(self.client.recv(2048))
                 player = players[clients.index(self)] 
                 keys = data[0]
@@ -88,9 +90,10 @@ class Client(threading.Thread):
                 if(keys[pygame.K_2]): player.fireMode = 1
                 if(keys[pygame.K_3]): player.fireMode = 2
                 if(keys[pygame.K_4]): player.fireMode = 3
-                if(keys[pygame.K_END] and player.health > 900 and player.ammo > player.maxAmmo-player.maxClip-10): 
+                if(keys[pygame.K_END] and player.health > 900 and player.ammo > player.maxAmmo-player.maxClip-10 and self.teleportDelay < 0): 
                     player.deaths += 1
                     player.revive(random.randint(100, 4900),random.randint(100, 4900))
+                    self.teleportDelay = 10000
                         
                 if(not joy == None):
                     if(joy[gregJoy.AXIS_PITCH] > DEADZONE): player.propel(-0.75*gregJoy.AXIS_PITCH*10*deltaTime)
@@ -104,11 +107,14 @@ class Client(threading.Thread):
                         player.revive(random.randint(100, 4900),random.randint(100, 4900))
                     if(joy[gregJoy.BUTTON_3] and not player.dead): 
                         player.reload()
-                    if(joy[gregJoy.BUTTON_2] and self.fireModeDelay < 0):
-                        self.fireModeDelay = 500
-                        player.fireMode += 1
-                        if(player.fireMode == 3):
-                            player.fireMode = 0
+                    if(joy[gregJoy.BUTTON_6]): player.fireMode = 0
+                    if(joy[gregJoy.BUTTON_7]): player.fireMode = 1
+                    if(joy[gregJoy.BUTTON_8]): player.fireMode = 2
+                    if(joy[gregJoy.BUTTON_9]): player.fireMode = 3
+                    if(joy[gregJoy.BUTTON_2] and player.health > 900 and player.ammo > player.maxAmmo-player.maxClip-10 and self.teleportDelay < 0): 
+                        player.deaths += 1
+                        player.revive(random.randint(100, 4900),random.randint(100, 4900))
+                        self.teleportDelay = 10000
             except:
                 pass
                     
@@ -149,6 +155,8 @@ class NewClient(threading.Thread):
             client = Client(c)
             clients.append(client)
             client.start()
+            if(len(data[0]) > 16):
+                data[0] = data[0][0:16]
             print("Username:", data[0])
             print("Colour:", data[1][0], data[1][1], data[1][2])
             players.append(Tank(random.randint(100, 4900),random.randint(100, 4900),tankShape,[int(data[1][0]),int(data[1][1]),int(data[1][2])], data[0], 200))
