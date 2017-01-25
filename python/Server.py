@@ -1,4 +1,4 @@
-# VERSION 3
+# VERSION 3.2
 
 import random, time, pygame, sys, socket, threading, gregJoy, pointInsidePolygon, pickle  # @UnusedImport
 
