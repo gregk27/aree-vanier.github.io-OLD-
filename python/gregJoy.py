@@ -24,6 +24,13 @@ BUTTON_2 = 4
 BUTTON_3 = 5
 BUTTON_4 = 6
 BUTTON_5 = 7
+BUTTON_6 = 8
+BUTTON_7 = 9
+BUTTON_8 = 10
+BUTTON_9 = 11
+BUTTON_10 = 12
+BUTTON_11 = 13
+
 
 
 
@@ -71,9 +78,6 @@ def check(joystick):
     toReturn.append(joystick.get_axis(0))
     toReturn.append(joystick.get_axis(1))
     toReturn.append(joystick.get_axis(2))
-    toReturn.append(joystick.get_button(0))
-    toReturn.append(joystick.get_button(1))
-    toReturn.append(joystick.get_button(2))
-    toReturn.append(joystick.get_button(3))
-    toReturn.append(joystick.get_button(4))
+    for i in range(0,11):
+      toReturn.append(joystick.get_button(i))
     return(toReturn)
