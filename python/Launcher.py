@@ -116,6 +116,8 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
+        print("local client")
+        
         try:
             server = open("Resources/Server.py")
             serverVersion = server.readline()
@@ -128,6 +130,8 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
+        print("local server")
+        
         try:
             classes = open("Resources/Classes.py")
             classesVersion = classes.readline()
@@ -139,6 +143,7 @@ class VersionCheck(threading.Thread):
             classesVersion = 0.0
         
         self.completed += 1
+        print("Local classes")
         print(clientVersion, serverVersion, classesVersion)
         
         
@@ -155,6 +160,8 @@ class VersionCheck(threading.Thread):
         
         webClient.close()
         
+        print("Web client")
+        
         self.completed += 1
         
         webServer = urlopen("https://aree-vanier.github.io/python/Server.py")
@@ -169,6 +176,8 @@ class VersionCheck(threading.Thread):
             server.close()
         
         webServer.close()
+        
+        print("Web server")
         
         self.completed += 1
         
@@ -186,6 +195,8 @@ class VersionCheck(threading.Thread):
         webClasses.close()
         
         self.completed += 1
+        
+        print("web classes")
                 
         print(webClientVersion, webServerVersion, webClassesVersion)
         
@@ -199,14 +210,7 @@ class VersionCheck(threading.Thread):
             
         self.completed += 1
         
-        if(not os.path.exists("Resources/gregJoy.py")):
-            gj = open("Resources/gregJoy.py", "w")
-            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
-            gj.write(webgj.read().decode())
-            webgj.close()
-            gj.close()
-        
-        self.completed += 1
+        print("Point inside polygon")
         
         if(not os.path.exists("Resources/gregJoy.py")):
             gj = open("Resources/gregJoy.py", "w")
@@ -216,22 +220,30 @@ class VersionCheck(threading.Thread):
             gj.close()
         
         self.completed += 1
+        
+        print("Gregjoy")
         
         if not os.path.exists("Resources/res"):
             os.makedirs("Resources/res")
         
         self.completed += 1
         
+        print("res")
+        
         if(not os.path.exists("Resources/res/data-latin.ttf")):
             urlretrieve("https://aree-vanier.github.io/python/data-latin.ttf", "Resources/res/data-latin.ttf")
         
         self.completed += 1
+        
+        print("Font")
         
         if(not os.path.exists("Resources/res/icon.png")):
             urlretrieve("https://aree-vanier.github.io/Icon.png", "Resources/res/icon.png")
             pygame.display.set_icon(pygame.image.load("Resources/res/icon.png"))
         
         self.completed += 1
+        
+        print("icon")
         
         
         #data format: SERVER|LABEL|HOST|PORT
@@ -253,6 +265,8 @@ class VersionCheck(threading.Thread):
         except:
             servers.append(Server("Greg", "KCV-INLABA03FE2", 1111))
         self.completed += 1
+        
+        print("data")
         
 
 vc = VersionCheck()
