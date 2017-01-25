@@ -237,6 +237,7 @@ class VersionCheck(threading.Thread):
         
         print("Font")
         
+        print("NEW CODE")
         if(not os.path.exists("Resources/res/icon.png")):
             print("No Icon")
             urlretrieve("https://aree-vanier.github.io/Icon.png", "Resources/res/icon.png")
