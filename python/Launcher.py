@@ -1,4 +1,4 @@
-# VERSION 3.5
+# VERSION 3.6
 
 import colorsys, os, pickle, random, socket, subprocess, threading, time, pygame  # @UnusedImport
 from urllib.request import urlopen, urlretrieve
