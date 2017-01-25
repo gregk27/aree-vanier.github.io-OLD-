@@ -11,7 +11,7 @@ if not parent == "Resources":
     firstRun = True
     os.makedirs("Resources")
     tanks = open("Tanks.bat", 'w')
-    contents = """C:\Python33\python.exe Resources/Tanks.py"""
+    contents = """C:\Python33\python.exe Tanks.py"""
     tanks.write(contents)
     tanks.close
     
@@ -38,6 +38,5 @@ if(float(webLauncherVersion)>float(launcherVersion)):
 
 webLauncher.close()
 
-if(firstRun): os.rename("Tanks.py","Resources/Tanks.py")
 
 subprocess.call("C:\Python33\python.exe Resources/Launcher.py")
