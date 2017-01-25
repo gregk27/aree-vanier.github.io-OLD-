@@ -1,0 +1,43 @@
+from urllib.request import urlopen
+import os, subprocess
+
+
+path = os.path.abspath(os.path.join("Tanks.py",os.pardir))
+parent = os.path.abspath(os.path.join("Tanks.py",os.pardir)).split("\\").pop()
+firstRun = False
+
+
+if not parent == "Resources":
+    firstRun = True
+    os.makedirs("Resources")
+    tanks = open("Tanks.bat", 'w')
+    contents = """C:\Python33\python.exe Resources/Tanks.py"""
+    tanks.write(contents)
+    tanks.close
+    
+try:
+    launcher=open("Resources/Launcher.py")
+    launcherVersion=launcher.readline()
+    launcher.close()
+    
+    launcherVersion=launcherVersion.replace("# VERSION","")
+    launcherVersion=launcherVersion.replace("\n","")
+except:
+    launcherVersion=0.0
+    
+webLauncher=urlopen("https://aree-vanier.github.io/python/Launcher.py")
+webLauncherContents=webLauncher.read().decode()
+webLauncherVersion=webLauncherContents.split("\n")[0]
+webLauncherVersion=webLauncherVersion.replace("# VERSION","")
+webLauncherVersion=webLauncherVersion.replace("\n","")
+print(launcherVersion, webLauncherVersion)
+if(float(webLauncherVersion)>float(launcherVersion)):
+    Launcher=open("Resources/Launcher.py","w")
+    Launcher.write(webLauncherContents)
+    Launcher.close()
+
+webLauncher.close()
+
+if(firstRun): os.rename("Tanks.py","Resources/Tanks.py")
+
+subprocess.call("C:\Python33\python.exe Resources/Launcher.py")
