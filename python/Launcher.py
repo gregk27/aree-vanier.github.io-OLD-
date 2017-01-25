@@ -207,15 +207,6 @@ class VersionCheck(threading.Thread):
         
         self.completed += 1
         
-        if(not os.path.exists("Resources/gregJoy.py")):
-            gj = open("Resources/gregJoy.py", "w")
-            webgj = urlopen("https://aree-vanier.github.io/python/gregJoy.py")
-            gj.write(webgj.read().decode())
-            webgj.close()
-            gj.close()
-        
-        self.completed += 1
-        
         if not os.path.exists("Resources/res"):
             os.makedirs("Resources/res")
         
@@ -228,7 +219,6 @@ class VersionCheck(threading.Thread):
         
         if(not os.path.exists("Resources/res/icon.png")):
             urlretrieve("https://aree-vanier.github.io/Icon.png", "Resources/res/icon.png")
-            pygame.display.set_icon(pygame.image.load("Resources/res/icon.png"))
         
         self.completed += 1
         
