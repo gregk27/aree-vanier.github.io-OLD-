@@ -9,7 +9,7 @@ pygame.init()
 
 screen = pygame.display.set_mode([int(960),int(720)])
 pygame.key.set_repeat(50,50)
-pygame.display.set_caption("Launcher")
+pygame.display.set_caption("Tanks")
 
 running = True
 
