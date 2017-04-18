@@ -40,4 +40,4 @@ webLauncher.close()
 
 if(not os.path.basename(__file__) == "Tanks.py"): os.rename(os.path.basename(__file__), "Tanks.py")
 path = input("Enter python path: ")
-subprocess.call(path + " Resources/Launcher.py")
+subprocess.call(path + " Resources/Launcher.py "+"|"+path+"|")
