@@ -39,5 +39,5 @@ if(float(webLauncherVersion)>float(launcherVersion)):
 webLauncher.close()
 
 if(not os.path.basename(__file__) == "Tanks.py"): os.rename(os.path.basename(__file__), "Tanks.py")
-
-subprocess.call("C:\Python33\python.exe Resources/Launcher.py")
+path = input("Enter python path: ")
+subprocess.call(path + " Resources/Launcher.py")
