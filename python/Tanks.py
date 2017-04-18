@@ -1,6 +1,8 @@
 from urllib.request import urlopen
 import os, subprocess
 
+## CHANGE PYTHON PATH HERE ##
+path = "C:\Python33\python.exe"
 
 path = os.path.abspath(os.path.join("Tanks.py",os.pardir))
 parent = os.path.abspath(os.path.join("Tanks.py",os.pardir)).split("\\").pop()
@@ -39,5 +41,4 @@ if(float(webLauncherVersion)>float(launcherVersion)):
 webLauncher.close()
 
 if(not os.path.basename(__file__) == "Tanks.py"): os.rename(os.path.basename(__file__), "Tanks.py")
-path = input("Enter python path: ")
 subprocess.call(path + " Resources/Launcher.py "+"|"+path+"|")
