@@ -3,7 +3,8 @@
 import colorsys, os, pickle, random, socket, subprocess, threading, time, pygame  # @UnusedImport
 from urllib.request import urlopen, urlretrieve
 
-
+## ENTER PYTHON PATH HERE ##
+path = "C:\Python33\python.exe"
 
 pygame.init()
 
@@ -36,7 +37,7 @@ class ClientThread(threading.Thread):
         print("Started")
         #Start client with args for host, port, usename and colour
         args = self.host+" "+str(self.port)+" "+self.name.replace(" ", "_")+" "+str(self.colour[0])+" "+str(self.colour[1])+" "+str(self.colour[2])
-        subprocess.call("C:\Python33\python.exe Resources/Client.py "+args)
+        subprocess.call(path+" Resources/Client.py "+args)
         print("DONE CLIENT")
         self.toKill = True
 
@@ -55,7 +56,7 @@ class ServerThread(threading.Thread):
         self.running = True
         print("Started")
         #Starts server with args for port and nuber of bots
-        subprocess.call("C:\Python33\python.exe Resources/Server.py "+str(self.port)+" "+str(self.bots))
+        subprocess.call(path+" Resources/Server.py "+str(self.port)+" "+str(self.bots))
         print("DONE")
         self.toKill = True
 
