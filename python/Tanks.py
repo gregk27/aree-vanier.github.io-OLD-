@@ -13,7 +13,7 @@ if not os.path.exists("Resources"):
     firstRun = True
     os.makedirs("Resources")
     tanks = open("Tanks.bat", 'w')
-    contents = """C:\Python33\python.exe Tanks.py"""
+    contents = path+""" Tanks.py"""
     tanks.write(contents)
     tanks.close()
     
