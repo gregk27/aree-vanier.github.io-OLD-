@@ -34,3 +34,12 @@ p{
 a, ul{
   color:white;
 }
+
+table{
+  color:white
+}
+
+th{
+  color:red;
+  border-bottom: 2px double white;
+}
