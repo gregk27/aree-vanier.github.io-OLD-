@@ -3,8 +3,8 @@ body, div.all{
   font-family:"Comic Sans MS";
 }
 
-h1{
-  background-color: black;
+div.header{
+  background-color: gray;
   color: red;
   text-align: center;
   font-size: 50px;
