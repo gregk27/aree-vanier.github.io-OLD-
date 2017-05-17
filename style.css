@@ -22,10 +22,6 @@ div.body{
 }
 
 h2{
-  padding-left:30px;
-  padding-right:30px;
-  margin:auto;
-  display:inline-block;
   background-color: gray;
   color: red;
   text-align:center;
@@ -48,4 +44,9 @@ table{
 th{
   color:red;
   border-bottom: 2px double white;
+}
+
+.center{
+  margin:auto;
+  width:100px;
 }
