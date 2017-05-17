@@ -22,10 +22,15 @@ div.body{
 }
 
 h2{
-  background-color:gray
+  padding-left:30px;
+  padding-right:30px;
+  margin:auto;
+  display:inline-block;
+  background-color: gray;
   color: red;
   text-align:center;
-  font-size: 25px
+  font-size: 25px;
+  border-bottom: 2px solid red;
 }
 p{
   color:white;
