@@ -81,14 +81,20 @@ class Host(threading.Thread):
                 for c in self.clients:
                     msgs = c.receive()
                     if(not msgs == None):
-                        for m in msgs:
-                            m=list(m.upper())
+                        for msg in msgs:
+                            m = list(msg.upper())
+                            iteration = 0
+                            correct = True;
                             for i in m:
-                                if(not i in characters):
+                                if((not i in characters) or iteration>=len(code)):
+                                    print("[DEBUG] Not in characters")
+                                    results.append("X")
+                                    correct = False
                                     continue
-                                char = code[m.index(i)]
+                                print(str(m)+"\t"+i)
+                                char = code[iteration]
                                 value = int(char, 16)
-                                correct = True;
+                                print("[DEBUG] "+ str(iteration)+ "\t" +i+"\t"+ str(value))
                                 if(char == i):
                                     results.append("Y")
                                 elif(value > int(i,16)):
@@ -97,11 +103,14 @@ class Host(threading.Thread):
                                 elif(value < int(i,16)):
                                     results.append("D")
                                     correct = False
-                        print("[SERVER] "+"".join(results))
-                        c.send(''.join(results))
-                        if(correct):
-                            c.winner = True
-                            guessed = True
+                                iteration += 1
+                            if(iteration < len(code)):
+                                correct = False
+                            print("[SERVER] "+"".join(results))
+                            c.send("             "+''.join(results))
+                            if(correct):
+                                c.winner = True
+                                guessed = True
             for c in self.clients:
                 c.send("STOP")
                 time.sleep(0.25)
@@ -135,7 +144,7 @@ else:
 
     
     s = socket.socket()
-    host = raw_input("Enter host: ")
+    host = socket.gethostname()#raw_input("Enter host: ")
     port = 1111
     name = raw_input("Enter name: ").replace('"',"").replace("'","").replace("\\","").replace(" ","_")
     print(name)
@@ -144,13 +153,14 @@ else:
     s.connect((host, port))
     print("Connected")
     s.sendall(name.encode());
-    send = Send(s)
     while not False:
         msg = s.recv(1024).decode()
         if(msg == "START"):
-            send.start() 
-        if(msg == "STOP"):
-            send.stop() 
+            print("[DEBUG] Starting")
+            send = Send(s)
+            send.start()
+        elif(msg == "STOP"):
+            send.stop = True
         else:
             print msg
     s.close()
