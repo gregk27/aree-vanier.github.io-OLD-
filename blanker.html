@@ -1,0 +1,41 @@
+<script>
+    function generate(){
+        var lyrics = document.getElementById("input").value;
+        
+        console.log(lyrics);
+        
+
+        var lines = lyrics.split('\n');
+
+        for (var i = 0; i < lines.length; i++) {
+            if (Math.random() > 0.5) continue;
+            var words = lines[i].split(' ');
+            console.log(words);
+            var index = Math.floor(Math.random() * words.length);
+            var target = words[index];
+            var out = Array(Math.ceil(target.length * 1.5)).join('_');
+            words[index] = out;
+            console.log(words);
+            lines[i] = words.join(' ');
+        }
+
+        console.log(lines);
+        lyrics = lines.join("<br/>");
+        console.log(lyrics)
+        document.getElementById("output").innerHTML = lyrics;
+    }
+
+    
+</script>
+
+<body>
+    <textarea name="input" cols="50" rows="10" id="input" ></textarea>
+</body>
+
+<br/><br/><br/>
+<button onclick="generate();">
+   Generate
+</button>
+<br/>
+<h2>Output</h2>
+<p id="output" style="border:1px solid black;padding:2px;font-family:sans-serif"></p>
