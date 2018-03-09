@@ -12,7 +12,7 @@
       var targetFrq = document.getElementById("endF").value;
       var deltaF = targetFrq-startFrq
       var deltaO = deltaF/3.75;
-      var out = Math.round((StartOpen+deltaO)*100)/100;
+      var out = (Math.round((deltaO+parseInt(startOpen)-1)*100)/100);
       console.log(out);
       document.getElementById("output").innerHTML=out;
       
