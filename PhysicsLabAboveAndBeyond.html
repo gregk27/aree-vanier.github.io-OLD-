@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Physics lab thing</title>
+  <script>
+    var startFrq = 1;
+    var startOpening = 1;
+
+    function getOpening(){
+      var startFrq = document.getElementById("startF").value;
+      var StartOpen = document.getElementById("startO").value;
+      var targetFrq = document.getElementById("endF").value;
+      var deltaF = targetFrq-startFrq
+      var deltaO = deltaF/3.75;
+      var out = Math.round((StartOpen+deltaO)*100)/100;
+      console.log(out);
+      document.getElementById("output").innerHTML=out;
+      
+    }
+
+  </script>
+</head>
+<body>
+  <h1>Physics lab above and beyond</h1>
+  <p>
+    Starting frequency (hz): <input id="startF" type="number"/>
+  <p/>
+  <p>
+    Starting opening (cm): <input id="startO" type="number"/>
+  </p>
+  <p>
+    Target freqency (hz): <input id="endF" type="number"/>
+  </p>
+  
+  <button onclick = "getOpening()">GO!</button>
+
+  <p> You would have to open your mouth to approximately <span id="output">0</span> cm.
+  
+</body>
+</html>
